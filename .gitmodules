@@ -1,0 +1,3 @@
+[submodule "sammelbestellung"]
+	path = sammelbestellung
+	url = git@github.com:mgmax/sammelbestellung.git
