@@ -13,6 +13,7 @@ Angebote müssen zusammengefasst sein, damit nicht einzelne Exports erzeugt werd
   cp config.ini.example config.ini
   # config.ini anpassen
   # Userlogin dafür verwenden
+  # database Namen anpassen an Datenbanknamen (z.B. production)
 
   #Reichelt exportieren
   ./erpReicheltImport.py export reichelt.de
