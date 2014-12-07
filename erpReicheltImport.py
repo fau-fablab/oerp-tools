@@ -15,28 +15,11 @@ print "TODO: Kommentar am Zeilenende bei export, versandkosten nicht mit --cache
 AUTOIMPORT_CATEGORY_ID=categoryIdFromName('automatisch importiert')
 SHIPPINGCOST_PRODUCT_ID=productIdFromName("Versandkosten")
 
+
+
 if sys.argv[1]=="export":
-    # export openERP -> csv
-    currentShop=sys.argv[2]
-    shop_id=partnerIdFromName(currentShop)
-    
-    filter=[("state", "=", "draft"), ("partner_id", "=", shop_id)]
-    if len(sys.argv) > 3:
-        filter=[("name", "=", sys.argv[3])]
-    for orderId in getIds('purchase.order', filter):
-        print u"# order {}".format(orderId)
-        for orderline in readElements('purchase.order.line', [('order_id', '=', orderId)], []):
-            #product=read('product.product', orderline["product_id"])
-            try:
-                supplierinfo_id=readProperty('product.product',orderline["product_id"][0], 'seller_ids', firstListItem=True)
-                supplierinfo=read('product.supplierinfo', supplierinfo_id)
-                                
-                # fix string output: print ints as 123 and not 123.0
-                if orderline["product_qty"] == int(orderline["product_qty"]):
-                    orderline["product_qty"] = int(orderline["product_qty"])
-                print u"{1};{0}".format(orderline["product_qty"],supplierinfo["product_code"]) # ,orderline["product_uom"][1])
-            except NotFound:
-                print u"# cannot find article: {}".format(orderline["product_id"][1])
+    print "sorry, this feature moved to export.py"
+            
 elif sys.argv[1]=="import":
     # import sammelbestellung-basket -> ERP
     if "--cached" in sys.argv:

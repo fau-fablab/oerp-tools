@@ -96,3 +96,12 @@ def callOnchangeHandler(db, field, value):
     update=dict(reply["value"])
     update[field]=value
     return update
+
+
+
+
+# functions helping with the "newer style" .browse() API
+
+def searchAndBrowse(db, filter):
+    return oerp.browse(db, oerp.search(db, filter))
+    
