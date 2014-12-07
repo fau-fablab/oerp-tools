@@ -2,7 +2,8 @@ oerp-tools
 ==========
 
 ##Dependencies
-* python 2.7
+* python2.7
+* ipython
 * oerplib (`sudo pip install oerplib`)
 
 ##Usage
@@ -19,4 +20,8 @@ Angebote müssen zusammengefasst sein, damit nicht einzelne Exports erzeugt werd
   ./erpReicheltImport.py export reichelt.de
   #Pollin exportieren
   ./erpReicheltImport.py export Pollin
+
+  # ipython Shell, um die oerplib api zu nutzen
+  ./ipython-shell.py
+   > oerp.browse(...)
 ```

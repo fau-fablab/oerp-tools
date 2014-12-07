@@ -14,6 +14,9 @@ a.name="Quarz 16 MHz SMD HC49-SMD"
 write to DB:
 oerp.write_record(a)
 
+http://oerplib.readthedocs.org/
+http://oerplib.readthedocs.org/en/latest/tutorials.html
+
 Obacht, mit der API kann man viele blödsinnige Dinge machen, die das Webinterface verbietet!
 """
 
