@@ -7,17 +7,16 @@ Hacky commandlinetools for things that should rather be [OERP](https://github.co
 
  - `export.py`: Exports orders, lists quantity and product ids from orders in oerp.
  - `nextprodid.py`: A small python script, to get the next available numeric product id.
- - `ipython-shell.py`: A ipython shell for the [oerp library](https://pypi.python.org/pypi/OERPLib/) - `oerphelper.py`: A helper library for python scripts.
+ - `ipython-shell.py`: A ipython shell for the [oerp library](https://pypi.python.org/pypi/OERPLib/)
+ - `oerphelper.py`: A helper library for python scripts.
  - `erpReicheltImport.py`: Imports Reichelt-shoppingcarts into the ERP automagically.
 
 ##Dependencies
-* python2.7
-* ipython
+* [python2.7](https://www.python.org/download/releases/2.7/)
+* [ipython](http://ipython.org/)
 * [oerplib](https://pypi.python.org/pypi/OERPLib) (`sudo pip install oerplib`)
 
 ##Usage
-Angebote müssen zusammengefasst sein, damit nicht einzelne Exports erzeugt werden.
-
 ```bash
   git clone --recursive  https://github.com/mgmax/oerp-tool-stuff
   cd oerp-tools
@@ -27,7 +26,9 @@ Angebote müssen zusammengefasst sein, damit nicht einzelne Exports erzeugt werd
   # database Namen anpassen an Datenbanknamen (z.B. production)
 ```
 
-### - `export.py`
+### - [`export.py`](export.py)
+Angebote müssen zusammengefasst sein, damit nicht einzelne Exports erzeugt werden.
+
 ```bash
   #Beschaffungsauftrag für Reichelt exportieren
   ./export.py purchase.order --shop=reichelt.de
@@ -35,7 +36,7 @@ Angebote müssen zusammengefasst sein, damit nicht einzelne Exports erzeugt werd
   ./export.py purchase.order 12
 ```
 
-### - `nextprodid.py`
+### - [`nextprodid.py`](nextprodid.py)
 Edit the `reserved_ids` entry under `nextprodid` section: This is a array with ranges of numbers, that are reserved for special products. They will not be returned by this script.
 
 Examples:
@@ -50,16 +51,16 @@ Then simply run:
 ./nextprodid.py
 ```
 
-### - `erpReicheltImport.py`
-```bash
-  # nicht mehr genutzt, theoretisch funktionsfähig, aber recht fragil:
-  # Reichelt-Warenkörbe und -artikel halbwegs automagisch ins ERP importieren
-  # ./erpReicheltImport.py basket.txt
-```
-
-### - `ipython-shell.py`
+### - [`ipython-shell.py`](ipython-shell.py)
 ```bash
   # ipython Shell, um die oerplib api zu nutzen
   ./ipython-shell.py
    > oerp.browse(...)
+```
+
+### - [`erpReicheltImport.py`](erpReicheltImport.py)
+```bash
+  # nicht mehr genutzt, theoretisch funktionsfähig, aber recht fragil:
+  # Reichelt-Warenkörbe und -artikel halbwegs automagisch ins ERP importieren
+  # ./erpReicheltImport.py basket.txt
 ```
