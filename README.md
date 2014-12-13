@@ -45,6 +45,12 @@ reserved_ids = []                        # no reserved ids
 reserved_ids = [[0, 100]]                # excludes all numbers from 0 to 99 (include)
 reserved_ids = [[0, 100], [2000, 2001]]  # excludes all numbers from 0 to 99 and 2000
                                          #          (from 2000 to 2001 (excl.) = 2000)
+reserved_ids = [[0, 100], [900, 1000], [8000, 8101], [9000, 10000]]
+					 # this string is applicable for FAU FabLab
+					 # 0 - 99 is for excluding everything <100
+					 # 900 - 1000 is for mills
+					 # 8000 - 8100 is laser material
+					 # 9* is reserved
 ```
 Then simply run:
 ```bash

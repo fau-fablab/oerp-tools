@@ -10,4 +10,5 @@ pricelist_id = 1
 version = 7.0
 
 [nextprodid]
-reserved_ids = [[0, 100], [2000, 2001]] # excludes all numbers from 0 to 99 (include) and 2000 (<- from 2000 to 2001 (excl.) = 2000)
+reserved_ids = [[0, 100], [900, 1000], [8000, 8101], [9000, 10000]]
+
