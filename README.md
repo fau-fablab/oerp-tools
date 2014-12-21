@@ -9,6 +9,7 @@ Hacky commandlinetools for things that should rather be [OERP](https://github.co
  - `nextprodid.py`: A small python script, to get the next available numeric product id.
  - `ipython-shell.py`: A ipython shell for the [oerp library](https://pypi.python.org/pypi/OERPLib/)
  - `oerphelper.py`: A helper library for python scripts.
+ - `set-logo.py`: Set the company logo (`set-logo.py example-data/logo-testdatenbank.png`)
  - `erpReicheltImport.py`: Imports Reichelt-shoppingcarts into the ERP automagically.
 
 ##Dependencies
