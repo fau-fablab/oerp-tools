@@ -1,4 +1,4 @@
-#!/usr/bin/ipython2.7 -i
+#!/usr/bin/ipython -i
 # -*- coding: utf-8 -*-
 print ""
 print "connecting to OERP"
