@@ -1,7 +1,7 @@
 oerp-tools
 ==========
 
-Hacky commandlinetools for things that should rather be [OERP](https://github.com/odoo/odoo) plugins.
+Hacky commandlinetools and a small webinterface for things that should rather be [OERP](https://github.com/odoo/odoo) plugins.
 
 ##Content
 
@@ -71,3 +71,15 @@ Then simply run:
   # Reichelt-Warenkörbe und -artikel halbwegs automagisch ins ERP importieren
   # ./erpReicheltImport.py basket.txt
 ```
+
+##Webinterface
+
+Place this repository in a web root directory and make following files readable for the webserver:
+
+ - [`index.php`](index.php)
+ - [`config.ini`](config.ini)
+ - [`nextprodid.py`](nextprodid.py)
+ - [`oerphelper.py`](oerphelper.py)
+ - [`.htaccess`](.htaccess) (?)
+
+Double check, if the [`config.ini`](config.ini) is not viewable for other user.
