@@ -35,10 +35,9 @@ import base64
 # switching to german:
 locale.setlocale(locale.LC_ALL, "de_DE.UTF-8")
 
-
 arguments = docopt(__doc__, version='blub')
 
-cfg = ConfigParser({'foo':'defaultvalue'})
+cfg = ConfigParser({'foo': 'defaultvalue'})
 cfg.readfp(codecs.open('config.ini', 'r', 'utf8'))
 
 oerp = oerplib.OERP(server=cfg.get('openerp', 'server'), protocol='xmlrpc+ssl',
@@ -46,24 +45,22 @@ oerp = oerplib.OERP(server=cfg.get('openerp', 'server'), protocol='xmlrpc+ssl',
                     version=cfg.get('openerp', 'version'))
 user = oerp.login(user=cfg.get('openerp', 'user'), passwd=cfg.get('openerp', 'password'))
 
-
-c=oerp.search('res.company',[])
-assert len(c)==1, "need exactly 1 company"
-companyId=c[0]
-
+c = oerp.search('res.company', [])
+assert len(c) == 1, "need exactly 1 company"
+companyId = c[0]
 
 if arguments['read']:
-	f=open(arguments['<logoFile>'],'w')
-	logo=oerp.read('res.company',companyId,['logo'])['logo']
-	logo=base64.b64decode(logo)
-	f.write(logo)
-	f.close()
+    f = open(arguments['<logoFile>'], 'w')
+    logo = oerp.read('res.company', companyId, ['logo'])['logo']
+    logo = base64.b64decode(logo)
+    f.write(logo)
+    f.close()
 elif arguments['write']:
-	f=open(arguments['<logoFile>'],'r')
-	logo=f.read()
-	f.close()
-	company=oerp.browse('res.company',companyId)
-	company.logo=base64.b64encode(logo)
-	oerp.write_record(company)
+    f = open(arguments['<logoFile>'], 'r')
+    logo = f.read()
+    f.close()
+    company = oerp.browse('res.company', companyId)
+    company.logo = base64.b64encode(logo)
+    oerp.write_record(company)
 else:
-	raise Exception("unknown command")
+    raise Exception("unknown command")

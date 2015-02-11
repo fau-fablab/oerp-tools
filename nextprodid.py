@@ -33,7 +33,7 @@ if not res.replace('[', '').replace(']', '').replace(',', '') == '':
 
 # get ids dictionary from oerp
 # ('active','>=',False) so that also deactivated products are found
-id_dict_list = oerp.read('product.product', oerp.search('product.product', [('active','>=',False)]), ['default_code'])
+id_dict_list = oerp.read('product.product', oerp.search('product.product', [('active', '>=', False)]), ['default_code'])
 
 # extract default_code from dict
 ids = []
@@ -41,11 +41,11 @@ for id_dict in id_dict_list:
     if str.isdigit(str(id_dict['default_code'])) and not int(id_dict['default_code'] in reserved):
         ids.append(int(id_dict['default_code']))
 
-#ids = sorted(ids)
+# ids = sorted(ids)
 
 # get next unused default_code
 i = 0
-foundIds=[]
+foundIds = []
 while len(foundIds) < 5:
     i += 1
     if i in reserved or i in ids:
