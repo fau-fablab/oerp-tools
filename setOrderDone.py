@@ -30,24 +30,36 @@ order can be PO00123
 from oerphelper import *
 import sys
 from docopt import docopt
+try:
+    from termcolor import colored
+except ImportError:
+    sys.stderr.write("termcolor not found. please: sudo pip install termcolor\n")
+    def colored(s, c=None, attrs=None):
+        print s
+
+def printError(s):
+    print colored(s, 'red',  attrs=['bold'])
+
+def printBold(s):
+    print colored(s, 'blue',  attrs=['bold'])
 
 arguments = docopt(__doc__)
 force = arguments['--force']
 for po in arguments['PO000123']:
     problem=False
-    warning=False
+    po=po.upper()
     if not po.startswith("PO"):
-        print "Error: order number must start with PO..."
+        printError("Error: order number must start with PO...")
         print __doc__
         sys.exit(1)
-    print "Order: ",  po
+    printBold("Order: {}".format(po))
     order=getId('purchase.order', [('name', '=', po)])
     order=oerp.browse('purchase.order', order)
     if order.state=="done":
-        print "already marked done."
+        printError("already marked done.")
         continue
     if not order.state=="approved":
-        print "state is not 'approved'"
+        printError("order state is not 'approved'")
         if not force:
             problem=True
     
@@ -59,17 +71,21 @@ for po in arguments['PO000123']:
         problem=True
     for inv in order.invoice_ids:
         if inv.state != 'paid':
-            print "Invoice is not paid"
+            printError("Invoice is not paid")
             invoicesOkay=False
     if not invoicesOkay:
         problem=True
     
     pickingOkay=True
     for pick in order.picking_ids:
+        print "checking picking {}".format(pick.name)
         if pick.invoice_state=='none':
-            print "Warning: invoice creation is not from picking list. (e.g. prepaid). This script cannot check if only for some part of the articles an invoice was created and paid."
-        if pick.state != 'done' or pick.invoice_state == '2binvoiced':
-            print "picking list is not done or is still to-be-invoiced"
+            print "Warning: invoice creation is not 'from picking list' (e.g. prepaid). This script cannot check if only for some part of the articles an invoice was created and paid."
+        if pick.invoice_state == '2binvoiced':
+            printError("picking list is still to-be-invoiced")
+            problem=True
+        if pick.state != 'done':
+            printError("picking list is not done, but in state '{}'".format(pick.state))
             problem=True
     if (not problem) or force:
         print "marking as done\n"
