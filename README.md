@@ -74,12 +74,9 @@ Then simply run:
 
 ##Webinterface
 
-Place this repository in a web root directory and make following files readable for the webserver:
+Make the `public` folder to a web root directory of a webserver and make following files readable / executeable for the webserver:
 
- - [`index.php`](index.php)
+ - [`public/index.php`](public/index.php)
  - [`config.ini`](config.ini)
  - [`nextprodid.py`](nextprodid.py)
  - [`oerphelper.py`](oerphelper.py)
- - [`.htaccess`](.htaccess) (?)
-
-Double check, if the [`config.ini`](config.ini) is not viewable for other user.

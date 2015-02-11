@@ -2,7 +2,8 @@
 
 <?php
 	$githuburl = "https://github.com/fau-fablab/oerp-tools";
-	$title = "OERP Tools"
+	$title = "OERP Tools";
+	$script_folder = "../";
 ?>
 
 <html>
@@ -36,7 +37,7 @@
             <h2>Next available Product IDs:</h2>
             <pre style="text-size:150%">
 <?php
-    $ids = explode( PHP_EOL, trim( run_system_command( '/usr/bin/env python ./nextprodid.py' ) ) );
+    $ids = explode( PHP_EOL, trim( run_system_command( '/usr/bin/env python ' . $script_folder . 'nextprodid.py' ) ) );
     foreach ( $ids as $extr ) {
         print ' - ' . $extr . PHP_EOL;
     }

@@ -4,11 +4,15 @@ import oerplib
 import locale
 from ConfigParser import ConfigParser
 import codecs
+import os
 
 locale.setlocale(locale.LC_ALL, "de_DE.UTF-8")
 
+basepath = os.path.dirname(__file__)
+configfile = os.path.abspath(os.path.join(basepath, "config.ini"))
+
 cfg = ConfigParser({})
-cfg.readfp(codecs.open('config.ini', 'r', 'utf8'))
+cfg.readfp(codecs.open(configfile, 'r', 'utf8'))
 
 oerp = oerplib.OERP(server=cfg.get('openerp', 'server'), protocol='xmlrpc+ssl',
                     database=cfg.get('openerp', 'database'), port=cfg.getint('openerp', 'port'),

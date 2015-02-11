@@ -20,10 +20,13 @@ from ConfigParser import ConfigParser
 import locale
 import codecs
 
+basepath = os.path.dirname(__file__)
+configfile = os.path.abspath(os.path.join(basepath, "config.ini"))
+
 # get reserved ids from config file
 locale.setlocale(locale.LC_ALL, "de_DE.UTF-8")
 cfg = ConfigParser({})
-cfg.readfp(codecs.open('config.ini', 'r', 'utf8'))
+cfg.readfp(codecs.open(configfile, 'r', 'utf8'))
 res = cfg.get('nextprodid', 'reserved_ids').replace(' ', '').replace('[[', '').replace(']]', '')
 reserved = []
 if not res.replace('[', '').replace(']', '').replace(',', '') == '':
