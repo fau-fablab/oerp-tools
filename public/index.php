@@ -35,14 +35,14 @@
         <div id="content" class="content">
             <h1>Webinterface for OERP-Tools</h1>
             <h2>Next available Product IDs:</h2>
-            <pre style="text-size:150%">
+            <ul style="font-size:large;font-weight:bold;">
 <?php
     $ids = explode( PHP_EOL, trim( run_system_command( '/usr/bin/env python ' . $script_folder . 'nextprodid.py' ) ) );
     foreach ( $ids as $extr ) {
-        print ' - ' . $extr . PHP_EOL;
+        print '<li>' . $extr . '</li>' . PHP_EOL;
     }
 ?>
-            </pre>
+            </ul>
 
 	    <p>Choose one of these IDs and place it in the <code>internal reference</code> Field. You can find more infos <a target=”_blank” href="http://user.fablab.fau.de/~ak22emur/pdf-buildserver/public/output/Produkt_anlegen.pdf">here</a>.</p>
         </div>
