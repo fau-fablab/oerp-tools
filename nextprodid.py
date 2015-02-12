@@ -19,9 +19,28 @@ import sys
 from ConfigParser import ConfigParser
 import locale
 import codecs
+import argparse
+import argcomplete
 
-basepath = os.path.dirname(__file__)
-configfile = os.path.abspath(os.path.join(basepath, "config.ini"))
+
+# <editor-fold desc="argparse">
+parser = argparse.ArgumentParser(description='A small python script, to get the next available numeric product id')
+
+parser.add_argument('count', metavar='n', type=int, help='how many available ids should be listed? [default 5]',
+                    default=5, nargs='?')
+
+argcomplete.autocomplete(parser)
+
+args = parser.parse_args()
+
+# validate
+if args.count < 1 or args.count > 25:
+    print '[!] count must be more than 0 and less than 25.'
+    exit(1)
+# </editor-fold>
+
+base_path = os.path.dirname(__file__)
+configfile = os.path.abspath(os.path.join(base_path, "config.ini"))
 
 # get reserved ids from config file
 locale.setlocale(locale.LC_ALL, "de_DE.UTF-8")
@@ -49,7 +68,7 @@ for id_dict in id_dict_list:
 # get next unused default_code
 i = 0
 foundIds = []
-while len(foundIds) < 5:
+while len(foundIds) < args.count:
     i += 1
     if i in reserved or i in ids:
         continue

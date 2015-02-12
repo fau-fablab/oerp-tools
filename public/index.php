@@ -37,12 +37,23 @@
             <h2>Next available Product IDs:</h2>
             <ul style="font-size:large;font-weight:bold;">
 <?php
-    $ids = explode( PHP_EOL, trim( run_system_command( '/usr/bin/env python ' . $script_folder . 'nextprodid.py' ) ) );
+    $n = 5;
+    if ( isset( $_GET['n'] ) ) {
+        $n = intval( $_GET['n'] );
+    }
+
+    $ids = explode( PHP_EOL, trim( run_system_command( '/usr/bin/env python ' . $script_folder . 'nextprodid.py ' . $n ) ) );
     foreach ( $ids as $extr ) {
         print '<li>' . $extr . '</li>' . PHP_EOL;
     }
 ?>
             </ul>
+
+        <form action="" id="count_form" method="get">
+            <label for="content_input">Count of IDs to show:</label>
+            <input id="content_input" value="<?= $n ?>" name="n" type="number" min="1" max="25">
+            <button id="submit_count" name="submit" value="1">Refresh</button>
+        </form>
 
 	    <p>Choose one of these IDs and place it in the <code>internal reference</code> Field. You can find more infos <a target=”_blank” href="http://user.fablab.fau.de/~ak22emur/pdf-buildserver/public/output/Produkt_anlegen.pdf">here</a>.</p>
         </div>

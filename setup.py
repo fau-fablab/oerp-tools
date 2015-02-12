@@ -21,5 +21,5 @@ setup(
     author_email='kontakt@fablab.fau.de',
     description='Hacky commandlinetools for things that should rather be OERP plugins',
     long_description=long_description,
-    install_requires=['ConfigParser', 'argcomplete', 'oerplib', 'docopt'],
+    install_requires=['ConfigParser', 'argcomplete', 'argparse', 'oerplib', 'docopt'],
 )
