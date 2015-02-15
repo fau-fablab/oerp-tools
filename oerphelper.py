@@ -14,8 +14,12 @@ configfile = os.path.abspath(os.path.join(basepath, "config.ini"))
 cfg = ConfigParser({})
 cfg.readfp(codecs.open(configfile, 'r', 'utf8'))
 
+use_test = cfg.get('openerp', 'use_test').lower().strip() == 'true'
+if use_test:
+    print "[i] use testing database."
+database = cfg.get('openerp', 'database_test') if use_test else cfg.get('openerp', 'database')
 oerp = oerplib.OERP(server=cfg.get('openerp', 'server'), protocol='xmlrpc+ssl',
-                    database=cfg.get('openerp', 'database'), port=cfg.getint('openerp', 'port'),
+                    database=database, port=cfg.getint('openerp', 'port'),
                     version='7.0')
 user = oerp.login(user=cfg.get('openerp', 'user'), passwd=cfg.get('openerp', 'password'))
 

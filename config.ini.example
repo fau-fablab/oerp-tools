@@ -3,11 +3,13 @@ server = xn--eichhrnchen-vfb.fablab.fau.de
 port = 443
 user = kassenterminal
 password = foooobaaaar
-database = production_test
+database = production_db
+database_test = test_db
 base_category_id = 1
 pos_config_id = 2
 pricelist_id = 1
 version = 7.0
+use_test = True
 
 [nextprodid]
 reserved_ids = [[0, 100], [900, 1000], [8000, 8101], [9000, 10000]]

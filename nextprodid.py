@@ -1,5 +1,6 @@
 #!/usr/bin/env python2.7
 # -*- coding: utf-8 -*-
+# PYTHON_ARGCOMPLETE_OK
 #
 # Copyright (C) 2014  Sebastian Endres <basti.endres@fablab.fau.de>
 # 
