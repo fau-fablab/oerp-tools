@@ -55,7 +55,10 @@
             <button id="submit_count" name="submit" value="1">Refresh</button>
         </form>
 
-	    <p>Choose one of these IDs and place it in the <code>internal reference</code> Field. You can find more infos <a target=”_blank” href="http://user.fablab.fau.de/~ak22emur/pdf-buildserver/public/output/Produkt_anlegen.pdf">here</a>.</p>
+        <ul>
+            <li>Choose one of these IDs and place it in the <code>internal reference</code> Field. You can find more infos <a target=”_blank” href="https://macgyver.fablab.fau.de/~buildserver/oerp-einweisung/Produkt_anlegen.pdf">here</a>.</li>
+            <li>The ERP is <a href="https://eichhörnchen.fablab.fau.de/?db=production">here</a>.</li>
+        </ul>
         </div>
 
 <?php
