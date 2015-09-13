@@ -61,6 +61,24 @@ Then simply run:
 ./nextprodid.py 10 # for 10 ids
 ```
 
+### - [`nextnprodid.py`](nextnprodid.py)
+Returns one available id with N consecutive ones. Used for the code generator in multivariant products.
+
+Add N products by multivariants:
+1) run ./nextnprodid.py N	# id with N consecutive ones
+2) Enter `[_str(o.id-offset)_]` in the code generator in the product template with `offset=TODO`
+
+Configuration:
+`reserved_ids` works same then `nextprodid.py`
+
+Run with:
+
+```bash
+./nextnprodid.py
+# or
+./nextnprodid.py 10 # for the first available id with 10 consecutive ids
+```
+
 ### - [`ipython-shell.py`](ipython-shell.py)
 ```bash
   # ipython Shell, um die oerplib api zu nutzen
