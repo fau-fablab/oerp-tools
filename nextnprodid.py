@@ -29,6 +29,8 @@ parser = argparse.ArgumentParser(description='A small python script, to get the 
 
 parser.add_argument('consecutive', metavar='n', type=int, help='how many consecutive ids should be listed? [default 5]',
                     default=5, nargs='?')
+parser.add_argument('OERPcode', metavar='n', type=bool, help='create code for multivariants products? [default FALSE]',
+                    default=False, nargs='?')
 
 argcomplete.autocomplete(parser)
 
@@ -58,6 +60,11 @@ if not res.replace('[', '').replace(']', '').replace(',', '') == '':
 # get ids dictionary from oerp
 # ('active','>=',False) so that also deactivated products are found
 id_dict_list = oerp.read('product.product', oerp.search('product.product', [('active', '>=', False)]), ['default_code'])
+
+
+# get last used id
+last_id = max(oerp.search('product.product'))
+
 
 # extract default_code from dict
 ids = []
@@ -92,7 +99,20 @@ for i in range(len(foundIds)-1):
         break
 
 if rowId > 0:
-    print ("%04d" % rowId)
+    if args.OERPcode:
+        codeId = (last_id - rowId + 1)
+        print ("WARNING: For new products only!")
+        print ("WARNING: Be sure you have checked \"Don't Update Variant\"!")
+        print ("Next unused id with " + str(args.consecutive) + " consecutive ids is %04d" % rowId)
+        print ("Enter the following code in the Code Generator")
+        if codeId > 0:
+            print ("[_str(o.id-" + str(codeId) + ")_]")
+        elif codeId == 0:
+            print ("[_str(o.id)_]")
+        else:
+            print ("[_str(o.id+" + str(-codeId) + ")_]")
+    else:
+        print ("%04d" % rowId)
 else:
     print ("There are no " + str(args.consecutive) + ' consecutive IDs available')
 
