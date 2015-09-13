@@ -35,7 +35,8 @@ argcomplete.autocomplete(parser)
 args = parser.parse_args()
 
 # validate
-if args.consecutive <= 1 or args.consecutive > 9999:
+maxUsedId = 9999
+if args.consecutive <= 1 or args.consecutive > maxUsedId:
     print '[!] consecutive must be more than 1 or less than 10000.'
     exit(1)
 # </editor-fold>
@@ -69,7 +70,6 @@ for id_dict in id_dict_list:
 # get next unused args.consecutive IDs default_code
 i = 0
 foundIds = []
-maxUsedId = 9999
 
 while i < maxUsedId:
     i += 1
