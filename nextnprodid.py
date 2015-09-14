@@ -47,7 +47,10 @@ base_path = os.path.dirname(__file__)
 configfile = os.path.abspath(os.path.join(base_path, "config.ini"))
 
 # get reserved ids from config file
-locale.setlocale(locale.LC_ALL, "de_DE.UTF-8")
+try:
+    locale.setlocale(locale.LC_ALL, "de_DE.UTF-8")
+except locale.Error:
+    locale.setlocale(locale.LC_ALL, 'german_Germany')
 cfg = ConfigParser({})
 cfg.readfp(codecs.open(configfile, 'r', 'utf8'))
 res = cfg.get('nextprodid', 'reserved_ids').replace(' ', '').replace('[[', '').replace(']]', '')
