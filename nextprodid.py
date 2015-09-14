@@ -9,6 +9,7 @@ A small python script, to get the next available numeric product id
 import sys
 import locale
 import codecs
+import json
 import argparse
 from oerphelper import *
 from ConfigParser import ConfigParser
@@ -56,12 +57,12 @@ def read_config():
         locale.setlocale(locale.LC_ALL, 'german_Germany')
     cfg = ConfigParser({})
     cfg.readfp(codecs.open(configfile, 'r', 'utf8'))
-    res = cfg.get('nextprodid', 'reserved_ids').replace(' ', '').replace('[[', '').replace(']]', '')
+    # parse reserved ids
+    res = cfg.get('nextprodid', 'reserved_ids').strip()
+    res_json = json.loads(res if res != "" else "[]")
     reserved = []
-    if not res.replace('[', '').replace(']', '').replace(',', '') == '':
-        res = res.split('],[')
-        for i in res:
-            reserved = reserved + range(int(i.split(',')[0]), int(i.split(',')[1]))
+    for r in res_json:
+        reserved += [int(r)] if not isinstance(r, list) else range(int(r[0]), int(r[-1])+1)
     return {'reserved': reserved}
 
 

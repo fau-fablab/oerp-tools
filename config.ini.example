@@ -12,5 +12,5 @@ version = 7.0
 use_test = True
 
 [nextprodid]
-reserved_ids = [[0, 100], [900, 1000], [8000, 8101], [9000, 10000]]
+reserved_ids = [[0, 99], [900, 999], 8000, [9000, 9999]]
 
