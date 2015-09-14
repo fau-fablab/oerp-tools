@@ -6,7 +6,10 @@ from ConfigParser import ConfigParser
 import codecs
 import os
 
-locale.setlocale(locale.LC_ALL, "de_DE.UTF-8")
+try:
+    locale.setlocale(locale.LC_ALL, "de_DE.UTF-8")
+except locale.Error:
+    locale.setlocale(locale.LC_ALL, 'german_Germany')
 
 basepath = os.path.dirname(__file__)
 configfile = os.path.abspath(os.path.join(basepath, "config.ini"))
