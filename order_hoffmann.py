@@ -13,8 +13,6 @@ except ImportError:
 hoffmann_id = 47
 
 
-
-
 def hoffmannCSV():
     """
     Converts an ERP purchase order to an Hoffmann comaptible .csv file
@@ -22,11 +20,11 @@ def hoffmannCSV():
 
     # parsing input arguments
     args = parse_args()
-    
+
     # checking input
     orderName = args.orderName
     if orderName == '':
-        print_error( 'No input.')
+        print_error('No input.')
         exit(1)
 
     # set fileName [default = orderName]
@@ -35,45 +33,53 @@ def hoffmannCSV():
         fileName = orderName
 
     # get purchase from input
-    purchase = oerp.search('purchase.order',([('name', '=',orderName)]))
+    purchase = oerp.search('purchase.order', ([('name', '=', orderName)]))
 
     # check if purchase existing
     if not purchase:
-        print_error( 'No valid purchase order.')
+        print_error('No valid purchase order.')
         exit(1)
 
     # get purchase ID
     purchase_id = purchase[0]
 
     # check if purchase is by Hoffmann
-    if oerp.browse('purchase.order',purchase_id).partner_id.id != hoffmann_id:
-        print_error( orderName + ' is not a Hoffmann order.')
+    if oerp.browse('purchase.order', purchase_id).partner_id.id != hoffmann_id:
+        print_error(orderName + ' is not a Hoffmann order.')
         exit(1)
 
-    # initiating output variables 
+    # initiating output variables
     csv_output = ["Item No.;Size;Quantity"]
     products_fail = []
     products_warnings = []
 
     # get line IDs from purchase
-    purchase_lines = oerp.read('purchase.order',purchase_id,["order_line"])['order_line']
-
+    purchase_lines = oerp.read('purchase.order', purchase_id, ["order_line"])['order_line']
 
     # check if purchase is not empty
     if not purchase_lines:
-        print_error( orderName + ' has no items.')
+        print_error(orderName + ' has no items.')
         exit(1)
 
     # get list of purchase lines
-    line_list = oerp.read('purchase.order.line',purchase_lines,['product_id','product_qty'])
-    
+    line_list = oerp.read('purchase.order.line',
+                          purchase_lines,
+                          ['product_id', 'product_qty'])
 
     # iterate over purchase lines
     for line in line_list:
         # get product ID
         product_id = line['product_id'][0]
         # get relevant product fields
-        product = oerp.read('product.product',product_id,['id','name','seller_ids','variants','variant_model_name','default_code','is_multi_variants'])
+        product = oerp.read('product.product',
+                            product_id,
+                            ['id',
+                             'name',
+                             'seller_ids',
+                             'variants',
+                             'variant_model_name',
+                             'default_code',
+                             'is_multi_variants'])
         # get seller IDs of the produce
         seller_ids = product['seller_ids']
         # check minimum one seller available
@@ -84,7 +90,7 @@ def hoffmannCSV():
             # check boolean if one seller is Hoffmann this will get true
             seller_is_hoffmann = False
             # get relevant supplier fields
-            supplier = oerp.read('product.supplierinfo',seller_ids,['name','product_code'])
+            supplier = oerp.read('product.supplierinfo', seller_ids, ['name', 'product_code'])
             # iterate over suppliers
             for seller in supplier:
                 # check if Hoffmann is supplier
@@ -127,20 +133,16 @@ def hoffmannCSV():
     conclusionPrinting(csv_output, products_fail, products_warnings, purchase_lines, fileName)
 
 
-
-
 def writeToFile(fileName, csv_output):
     """
     Writing order to file
     """
-    
+
     if len(csv_output) > 1:
-        thefile = open( str(fileName) + '.csv','w+')
+        thefile = open(str(fileName) + '.csv', 'w+')
         for item in csv_output:
             thefile.write("%s\n" % item)
         thefile.close()
-
-
 
 
 def conclusionPrinting(csv_output, products_fail, products_warnings, purchase_lines, fileName):
@@ -149,22 +151,20 @@ def conclusionPrinting(csv_output, products_fail, products_warnings, purchase_li
     """
 
     if len(csv_output) > 1:
-        print (str(len(csv_output)-1) + ' out of ' + str(len(purchase_lines)) + ' have been sucessfull written to ' + fileName + '.csv')
+        print("'{nr}' out of '{cnt}' have been sucessfull written to '{fname}.csv'"
+              .format(nr=len(csv_output)-1, cnt=len(purchase_lines), fname=fileName))
 
     if products_fail:
-        print_error (str(len(products_fail)) + ' errors occured.')
+        print_error(str(len(products_fail)) + ' errors occured.')
         for fail in products_fail:
             print_error(fail)
 
     if products_warnings:
-        print_warning (str(len(products_warnings)) + ' warnings occured.')
+        print_warning(str(len(products_warnings)) + ' warnings occured.')
         for warning in products_warnings:
             print_warning(warning)
-            
+
     exit(0)
-
-
-
 
 
 def findVariant(variants, variant_model_name):
@@ -180,20 +180,18 @@ def findVariant(variants, variant_model_name):
     position_left = variant_model_name.find('[_')
     if position_left is -1:
         return result
-    
+
     position_right = variant_model_name.find('_]') + 1
     if position_right is 0:
         return result
-    
+
     function_length = position_right - position_left + 1
     length = - (len(variant_model_name) - len(variants) - function_length)
 
     if length > 0:
-        result = variants[position_left : (position_left + length)]
-        
+        result = variants[position_left: (position_left + length)]
+
     return result
-
-
 
 
 def parse_args():
@@ -202,18 +200,16 @@ def parse_args():
     """
     parser = argparse.ArgumentParser(description=__doc__)
 
-    parser.add_argument('orderName', metavar='n', type=str, default='', nargs='?',
+    parser.add_argument('orderName', type=str,
                         help='Which Hoffmann order should be parsed to a CVS file?')
-    parser.add_argument('fileName', metavar='n', type=str, default='', nargs='?',
-                        help='Which name should ne the CVS file get?')
-    
+    parser.add_argument('fileName', type=str,
+                        help='Which name should the CVS file get?')
+
     try:
         argcomplete.autocomplete(parser)
     except NameError:
         pass
     return parser.parse_args()
-
-
 
 
 def print_error(message):
@@ -223,15 +219,11 @@ def print_error(message):
     print >> sys.stderr, "[!] %s" % message
 
 
-
-
 def print_warning(message):
     """
     prints an warning message to stdout
     """
     print >> sys.stdout, "[i] %s" % message
-
-
 
 if __name__ == "__main__":
     hoffmannCSV()
