@@ -1,6 +1,7 @@
 # spezifisch
 *~
 config.ini
+*.csv
 
 ####################################
 # Template für python gitignore:
