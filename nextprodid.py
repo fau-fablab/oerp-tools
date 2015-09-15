@@ -74,6 +74,12 @@ def parse_args():
 
     parser.add_argument('count', metavar='n', type=int, default=5, nargs='?',
                         help='how many available ids should be listed? [default 5]')
+    parser.add_argument('-c', '--consecutive', dest='consecutive',
+                        default=False, action='store_true',
+                        help="should the ids be consecutive? [default FALSE]")
+    parser.add_argument('-o', '--oerpcode', dest='oerp_code',
+                        default=False, action='store_true',
+                        help="create code for multivariants products? [default FALSE]")
     try:
         argcomplete.autocomplete(parser)
     except NameError:
@@ -101,6 +107,18 @@ def oerp_get_prod_ids():
     return ids
 
 
+def get_free_id(non_free_ids, start_id=0):
+    """
+    returns one id, which is not in non_free_ids
+    :param non_free_ids: a list of invalid ids (reserved or occupied)
+    :param start_id: the id to start with (first run 0; if 2 was found before -> 3)
+    """
+    while True:
+        if start_id not in non_free_ids:
+            return start_id
+        start_id += 1
+
+
 def main():
     args = parse_args()
 
@@ -110,18 +128,24 @@ def main():
         exit(1)
 
     # get reserved ids from config file
+    # Note: ids == product_ids == default_code
     config = read_config()
 
-    ids = oerp_get_prod_ids()
+    # get non free ids from oerp and from config (reserved) both are invalid
+    non_free_ids = oerp_get_prod_ids() + config["reserved"]
 
-    # get next unused default_code
-    i = 0
+    # get enough free ids
     foundIds = []
     while len(foundIds) < args.count:
-        i += 1
-        if i in config['reserved'] or i in ids:
-            continue
-        foundIds.append(i)
+        free_id = get_free_id(non_free_ids, foundIds[-1]+1 if len(foundIds) else 0)
+        if not args.consecutive or not len(foundIds) or free_id == foundIds[-1] + 1:
+            # we don't want consecutive or we want cons. and the found number
+            # is 1 greater than the number before, or it is the first number
+            foundIds.append(free_id)
+        else:
+            # we want consecutive but this wasn't consecutive -> maybe free_id
+            # is the first free id of the sequence
+            foundIds = [free_id]
 
     for i in foundIds:
         print("%04d" % i)
