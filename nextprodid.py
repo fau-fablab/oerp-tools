@@ -147,8 +147,22 @@ def main():
             # is the first free id of the sequence
             foundIds = [free_id]
 
-    for i in foundIds:
-        print("%04d" % i)
+    if not args.oerp_code:
+        # list ids
+        for i in foundIds:
+            print("%04d" % i)
+    else:
+        # create special OERP code
+        codeId = -1337  # TODO
+        rowId = 1337  # TODO
+        print_error("For new products only!")
+        print_error("Be sure you have checked 'Don't Update Variant'!")
+        print_error("Next unused id with {n} consecutive ids is '%04d'".format(n=args.count) % rowId)
+        print_error("Enter the following code in the Code Generator")
+        print("[_str(o.id%s)_]" % ("" if codeId is 0 else
+                                   "-%d" % codeId if codeId > 0 else
+                                   "+%d" % -codeId))
+
     sys.exit(0)
 
 if __name__ == "__main__":
