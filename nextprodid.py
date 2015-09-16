@@ -113,10 +113,13 @@ def get_free_id(non_free_ids, start_id=0):
     :param non_free_ids: a list of invalid ids (reserved or occupied)
     :param start_id: the id to start with (first run 0; if 2 was found before -> 3)
     """
-    while True:
+    while start_id < 10000:
+        # while the id is a 4 digit number
         if start_id not in non_free_ids:
             return start_id
         start_id += 1
+    print_error("There is no id left")
+    exit(1337)
 
 
 def main():
