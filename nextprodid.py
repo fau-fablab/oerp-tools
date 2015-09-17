@@ -3,7 +3,8 @@
 # PYTHON_ARGCOMPLETE_OK
 
 """
-A small python script, to get the next available numeric product id
+A small python script, to get the next available n numeric product id,
+optional with searching for consecutive ones and print OERP multi variant code
 """
 
 import sys
@@ -18,7 +19,8 @@ try:
 except ImportError:
     print >> sys.stderr, "Consider installing argcomplete"
 
-__authors__ = "Sebastian Endres <basti.endres@fablab.fau.de>"
+__authors__ = "Sebastian Endres <basti.endres@fablab.fau.de>," \
+              "Michael Jäger <michael.jaeger@fablab.fau.de>"
 __license__ = "This program is free software: you can redistribute it and/or "
 "modify it under the terms of the GNU General Public License as published by "
 "the Free Software Foundation, either version 3 of the License, or (at your "
@@ -30,11 +32,12 @@ __license__ = "This program is free software: you can redistribute it and/or "
 
 "You should have received a copy of the GNU General Public License along with "
 "this program. If not, see <http://www.gnu.org/licenses/>."
-__copyright__ = "Copyright (C) 2014 %s" % __authors__
+__copyright__ = "Copyright (C) 2015 %s" % __authors__
 
 
-# <editor-fold desc="argparse">
-# </editor-fold>
+#TODO:
+print(__authors__)
+
 
 
 def print_error(message):
@@ -80,6 +83,7 @@ def parse_args():
     parser.add_argument('-o', '--oerpcode', dest='oerp_code',
                         default=False, action='store_true',
                         help="create code for multivariants products? [default FALSE]")
+
     try:
         argcomplete.autocomplete(parser)
     except NameError:
@@ -126,8 +130,8 @@ def main():
     args = parse_args()
 
     # validate
-    if args.count < 1 or args.count > 1000:
-        print_error("Count must be more than 0 and less than 1000.")
+    if args.count < 1 or args.count > 10000:
+        print_error("Count must be more than 0 and less than 10000.")
         exit(1)
 
     # get reserved ids from config file
@@ -157,16 +161,127 @@ def main():
     else:
         # create special OERP code
         codeId = -1337  # TODO
-        rowId = 1337  # TODO
+        first_id_of_sequence = foundIds[-args.count]  # the n-th last found id
         print_error("For new products only!")
         print_error("Be sure you have checked 'Don't Update Variant'!")
-        print_error("Next unused id with {n} consecutive ids is '%04d'".format(n=args.count) % rowId)
+        print_error("Next unused id with {n} consecutive ids is '%04d'".format(n=args.count) % first_id_of_sequence)
         print_error("Enter the following code in the Code Generator")
         print("[_str(o.id%s)_]" % ("" if codeId is 0 else
                                    "-%d" % codeId if codeId > 0 else
                                    "+%d" % -codeId))
 
     sys.exit(0)
+<<<<<<<merged HEAD von Basti
+=======
+def calculate_found_ids(quantity):
+    """
+    Returns requested number of foundIds
+    """
+    # get reserved ids from config file
+    # Note: ids == product_ids == default_code
+    config = read_config()
+
+    # get all ids
+    ids = oerp_get_prod_ids()
+
+    i = 0
+    foundIds = []
+    while len(foundIds) < quantity:
+        i += 1
+        if i in config['reserved'] or i in ids:
+            continue
+        foundIds.append(i)
+    return foundIds
+
+
+def ids_in_Row(count, maxUsedId):
+    """
+    Finds the first id with N=count consecutive ones
+    """
+
+    # calculate maxUsedId unused default_codes
+    foundIds = calculate_found_ids(maxUsedId)
+    # check if foundIds is empty
+    if not foundIds:
+        print_error ("There are no more IDs available")
+        sys.exit(1)
+    # rowId is the starting ID with N consecutives
+    rowId = 0
+    # iterate over the findIds list
+    for i in range(len(foundIds)-1):
+        # check boolean if this number has N consecutives
+        isRow = True
+        # iterate over the N next numbers
+        for j in range(count):
+            # check if foundIds is out of range, then break
+            if (i+j) > (len(foundIds)-1):
+                isRow = False
+                break
+            # check if ID is not consecutive, then break
+            if foundIds[i+j] != foundIds[i]+j:
+                isRow = False
+                break
+        # check if this number has N consecutives, write to rowId and break
+        if isRow:
+            rowId = foundIds[i]
+            return rowId
+    return rowId
+
+
+def main():
+    args = parse_args()
+
+    # if consecutive
+    if args.consecutive:
+        # larges default_codes usable in OERP
+        maxUsedId = 9999
+    else:
+        # maximum unused IDs showing
+        maxUsedId = 1000
+
+    # validate
+    if args.count < 1 or args.count > maxUsedId:
+        print_error("Count must be more than 0 and less than " + str(maxUsedId) + ".")
+        exit(1)
+
+    # if not consecutive [default]
+    if not args.consecutive:
+        foundIds = calculate_found_ids(args.count)
+        # print foundIds
+        for i in foundIds:
+            print("%04d" % i)
+        sys.exit(0)
+    else:
+        rowId = ids_in_Row(args.count, maxUsedId)
+
+        # check if one ID with N consective was found
+        if rowId > 0:
+            # check if OERPcode should not be printed [default]
+            if not args.OERPcode:
+                print ("%04d" % rowId)
+            else:
+                # get last used internal id in the erp
+                last_id = max(oerp.search('product.product'))
+                # calculate offset for OERPcode
+                codeId = (last_id - rowId + 1)
+                # print warning, how to use OERPcode
+                print_error ("WARNING: For new products only!")
+                print_error ("WARNING: Be sure you have checked \"Don't Update Variant\"!")
+                # print next ID with N consecutives
+                print ("Next unused id with " + str(args.consecutive) + " consecutive ids is %04d" % rowId)
+                print ("Enter the following code in the Code Generator")
+                # calculate Code Generator code
+                if codeId > 0:
+                    print ("[_str(o.id-" + str(codeId) + ")_]")
+                elif codeId == 0:
+                    print ("[_str(o.id)_]")
+                else:
+                    print ("[_str(o.id+" + str(-codeId) + ")_]")
+        # if no ID was found
+        else:
+            print_error ("There are no " + str(args.count) + " consecutive IDs available")
+
+>>>>>>> merge-nextprodid-nextnproid
 
 if __name__ == "__main__":
     main()
