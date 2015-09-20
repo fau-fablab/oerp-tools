@@ -15,9 +15,10 @@ import argparse
 from oerphelper import *
 from ConfigParser import ConfigParser
 try:
-    import argcomplete
+    from argcomplete import autocomplete
 except ImportError:
-    print >> sys.stderr, "Consider installing argcomplete"
+    def autocomplete_wrapper(*args): print_error("Consider installing argcomplete")
+    autocomplete = autocomplete_wrapper
 
 __authors__ = "Sebastian Endres <basti.endres@fablab.fau.de>, " \
               "Michael Jäger <michael.jaeger@fablab.fau.de>"
@@ -79,10 +80,7 @@ def parse_args():
                         default=False, action='store_true',
                         help="create code for multivariants products? (implicates --consecutive) [default FALSE]")
 
-    try:
-        argcomplete.autocomplete(parser)
-    except NameError:
-        pass
+    autocomplete(parser)
 
     # oerp_code only works with consecutive ids...
     args = parser.parse_args()
@@ -156,33 +154,33 @@ def main():
     non_free_ids = oerp_get_prod_ids() + config["reserved"]
 
     # get enough free ids
-    foundIds = []
-    while len(foundIds) < args.count:
+    found_ids = []
+    while len(found_ids) < args.count:
         # receive the next free id and start with the last found id + 1
         # or with 0 when list is empty
-        free_id = get_free_id(non_free_ids, foundIds[-1]+1 if len(foundIds) else 0)
-        if not args.consecutive or not len(foundIds) or free_id == foundIds[-1] + 1:
+        free_id = get_free_id(non_free_ids, found_ids[-1]+1 if len(found_ids) else 0)
+        if not args.consecutive or not len(found_ids) or free_id == found_ids[-1] + 1:
             # we don't want consecutive or we want cons. and the found number
             # is 1 greater than the number before, or it is the first number
-            foundIds.append(free_id)
+            found_ids.append(free_id)
         else:
             # we want consecutive but this wasn't consecutive -> maybe free_id
             # is the first free id of the sequence
-            foundIds = [free_id]
+            found_ids = [free_id]
 
     if not args.oerp_code:
         # list ids
-        for i in foundIds:
+        for i in found_ids:
             print("%04d" % i)
     else:
         # create special OERP code
-        # foundIds[0] is the first found id in sequence
+        # found_ids[0] is the first found id in sequence
         # calculate the offset between OERPs internal_id and our default_code
-        offset = foundIds[0] - oerp_get_max_internal_id() - 1
+        offset = found_ids[0] - oerp_get_max_internal_id() - 1
         print_error("For new products only!")
         print_error("Be sure you have checked 'Don't Update Variant'!")
         print_error("Next unused id with {n} consecutive ids is '%04d'".
-                    format(n=args.count) % foundIds[0])
+                    format(n=args.count) % found_ids[0])
         print_error("Enter the following code in the Code Generator")
         print("[_str(o.id{s}{n})_]".format(s=signum(offset),
                                            n=strip0(abs(offset))))
