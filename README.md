@@ -58,24 +58,10 @@ Then simply run:
 ./nextprodid.py
 # or
 ./nextprodid.py 10 # for 10 ids
-```
-
-### - [`nextnprodid.py`](nextnprodid.py)
-Returns one available id with N consecutive ones. Used for the code generator in multivariant products.
-
-Add N products by multivariants:
-1) run ./nextnprodid.py N	# id with N consecutive ones
-2) Enter `[_str(o.id-offset)_]` in the code generator in the product template with `offset=TODO`
-
-Configuration:
-`reserved_ids` works same then `nextprodid.py`
-
-Run with:
-
-```bash
-./nextnprodid.py
 # or
-./nextnprodid.py 10 # for the first available id with 10 consecutive ids
+./nextprodid.py 7 --consecutive # for 7 consecutive ids
+# or
+./nextprodid.py 17 [--consecutive] --oerpcode # for 17 consecutive codes, but print the OERP code for the code generator in multivariant products
 ```
 
 ### - [`ipython-shell.py`](ipython-shell.py)

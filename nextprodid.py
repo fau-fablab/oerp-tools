@@ -82,13 +82,18 @@ def parse_args():
                         help="should the ids be consecutive? [default FALSE]")
     parser.add_argument('-o', '--oerpcode', dest='oerp_code',
                         default=False, action='store_true',
-                        help="create code for multivariants products? [default FALSE]")
+                        help="create code for multivariants products? (implicates --consecutive) [default FALSE]")
 
     try:
         argcomplete.autocomplete(parser)
     except NameError:
         pass
-    return parser.parse_args()
+
+    # oerp_code only works with consecutive ids...
+    args = parser.parse_args()
+    if args.oerp_code:
+        args.consecutive = True
+    return args
 
 
 def oerp_get_prod_ids():
