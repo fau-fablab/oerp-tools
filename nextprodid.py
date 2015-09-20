@@ -144,7 +144,7 @@ def main():
     args = parse_args()
 
     # validate
-    if args.count < 1 or args.count > 10000:
+    if args.count < 1 or args.count > 9999:
         print_error("Count must be more than 0 and less than 10000.")
         exit(1)
 
@@ -158,6 +158,8 @@ def main():
     # get enough free ids
     foundIds = []
     while len(foundIds) < args.count:
+        # receive the next free id and start with the last found id + 1
+        # or with 0 when list is empty
         free_id = get_free_id(non_free_ids, foundIds[-1]+1 if len(foundIds) else 0)
         if not args.consecutive or not len(foundIds) or free_id == foundIds[-1] + 1:
             # we don't want consecutive or we want cons. and the found number
@@ -174,13 +176,13 @@ def main():
             print("%04d" % i)
     else:
         # create special OERP code
-        first_id_of_sequence = foundIds[-args.count]  # the n-th last found id
-        # the offset between OERPs internal_id and our default_code
-        offset = first_id_of_sequence - oerp_get_max_internal_id() - 1
+        # foundIds[0] is the first found id in sequence
+        # calculate the offset between OERPs internal_id and our default_code
+        offset = foundIds[0] - oerp_get_max_internal_id() - 1
         print_error("For new products only!")
         print_error("Be sure you have checked 'Don't Update Variant'!")
         print_error("Next unused id with {n} consecutive ids is '%04d'".
-                    format(n=args.count) % first_id_of_sequence)
+                    format(n=args.count) % foundIds[0])
         print_error("Enter the following code in the Code Generator")
         print("[_str(o.id{s}{n})_]".format(s=signum(offset),
                                            n=strip0(abs(offset))))
