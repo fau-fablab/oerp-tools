@@ -65,3 +65,8 @@ target/
 
 # intellij
 .idea
+
+# virtualenv
+venv/
+virtenv/
+virtualenv/
