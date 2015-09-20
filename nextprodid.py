@@ -68,6 +68,9 @@ def parse_args():
     parser.add_argument('-o', '--oerpcode', dest='oerp_code',
                         default=False, action='store_true',
                         help="create code for multivariants products? (implicates --consecutive) [default FALSE]")
+    parser.add_argument('-l', '--list', dest='list',
+                        default=False, action='store_true',
+                        help="list the found product ids? [default: FALSE, when --oerpcode, else TRUE]")
 
     autocomplete(parser)
 
@@ -157,11 +160,11 @@ def main():
             # is the first free id of the sequence
             found_ids = [free_id]
 
-    if not args.oerp_code:
+    if not args.oerp_code or args.list:
         # list ids
         for i in found_ids:
             print("%04d" % i)
-    else:
+    if args.oerp_code:
         # create special OERP code
         # found_ids[0] is the first found id in sequence
         # calculate the offset between OERPs internal_id and our default_code

@@ -34,15 +34,41 @@
 
         <div id="content" class="content">
             <h1>Webinterface for OERP-Tools</h1>
-            <h2>Next available Product IDs:</h2>
-            <ul style="font-size:large;font-weight:bold;">
 <?php
     $n = 5;
-    if ( isset( $_GET['n'] ) ) {
+    if ( isset( $_GET['n'] ) && is_int( $_GET['n'] ) ) {
         $n = intval( $_GET['n'] );
     }
+    $consecutive = false;
+    if ( isset( $_GET['consecutive'] ) ) {
+        $consecutive = boolval( $_GET['consecutive'] );
+        $consecutiveParam = "--consecutive --oerpcode --list"; # when consecutive -> also generate oerpcode but also list ids
+    }
 
-    $ids = explode( PHP_EOL, trim( run_system_command( '/usr/bin/env python ' . $script_folder . 'nextprodid.py ' . $n ) ) );
+    $ids = explode( PHP_EOL, trim( run_system_command( '/usr/bin/env python2.7 ' . $script_folder . 'nextprodid.py ' . $n . " " . $consecutiveParam ) ) );
+
+    if ( $consecutive ) {
+        $oerpcode = array_pop( $ids );
+
+        print( '
+            <h2>OERP Code for Multi Variants:</h2>
+            <div class="error" style="color:black;background-color:#ccc;line-height:3em">
+                    <tt>' . $oerpcode . '</tt>
+            </div>
+            <br />
+            <div class="error">
+                    <p>For new products only!</p>
+                    <p>Be sure you have checked <br /><tt>Don\'t Update Variant</tt>!</p>
+            </div>
+            <p>Enter the code above in the Code Generator to generate the following ids:</p>' );
+    } else {
+        print( '
+            <h2>Next available Product IDs:</h2>' );
+    }
+
+    print( '
+            <ul style="font-size:large,font-weight:bold;">' );
+
     foreach ( $ids as $extr ) {
         print '<li>' . $extr . '</li>' . PHP_EOL;
     }
@@ -50,8 +76,12 @@
             </ul>
 
         <form action="" id="count_form" method="get">
-            <label for="content_input">Count of IDs to show:</label>
-            <input id="content_input" value="<?= $n ?>" name="n" type="number" min="1" max="25">
+            <label for="count_input">Count of IDs to show:</label>
+            <input id="count_input" value="<?= $n ?>" name="n" type="number" min="1" max="9999">
+            <br />
+            <input id="consecutive_input" value="true" name="consecutive" type="checkbox" <?= ($consecutive ? 'checked="true"' : '') ?>>
+            <label for="consecutive_input">Consecutive (for Multi Variants)</label>
+            <br />
             <button id="submit_count" name="submit" value="1">Refresh</button>
         </form>
 

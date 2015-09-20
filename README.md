@@ -62,6 +62,8 @@ Then simply run:
 ./nextprodid.py 7 --consecutive # for 7 consecutive ids
 # or
 ./nextprodid.py 17 [--consecutive] --oerpcode # for 17 consecutive codes, but print the OERP code for the code generator in multivariant products
+# or
+./nextprodid.py 17 [--consecutive] --oerpcode # same as above, but also print the list of the ids
 ```
 
 ### - [`ipython-shell.py`](ipython-shell.py)
