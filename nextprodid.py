@@ -8,12 +8,9 @@ optional with searching for consecutive ones and print OERP multi variant code
 """
 
 import sys
-import locale
-import codecs
 import json
 import argparse
-from oerphelper import *
-from ConfigParser import ConfigParser
+from oerphelper import oerp, cfg as helper_cfg
 try:
     from argcomplete import autocomplete
 except ImportError:
@@ -47,17 +44,9 @@ def read_config():
     """
     reads the config.ini and returns a dict including the relevant values
     """
-    base_path = os.path.dirname(__file__)
-    configfile = os.path.abspath(os.path.join(base_path, "config.ini"))
-
-    try:
-        locale.setlocale(locale.LC_ALL, "de_DE.UTF-8")
-    except locale.Error:
-        locale.setlocale(locale.LC_ALL, 'german_Germany')
-    cfg = ConfigParser({})
-    cfg.readfp(codecs.open(configfile, 'r', 'utf8'))
+    # use config reader from oerphelper
     # parse reserved ids
-    res = cfg.get('nextprodid', 'reserved_ids').strip()
+    res = helper_cfg.get('nextprodid', 'reserved_ids').strip()
     res_json = json.loads(res if res != "" else "[]")
     reserved = []
     for r in res_json:

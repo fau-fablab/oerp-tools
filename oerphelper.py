@@ -6,6 +6,30 @@ from ConfigParser import ConfigParser
 import codecs
 import os
 
+
+__all__ = ["cfg",
+           "user",
+           "use_test",
+           "database",
+           "oerpContext",
+           "oerp",
+           "NotFound",
+           "getId",
+           "read",
+           "write",
+           "create",
+           "readElements",
+           "readProperty",
+           "categoryIdFromName",
+           "partnerIdFromName",
+           "productIdFromName",
+           "warehouseIdFromName",
+           "customerIdFromName",
+           "productIdsFromSupplier",
+           "getDefault",
+           "callOnchangeHandler",
+           "searchAndBrowse"]
+
 try:
     locale.setlocale(locale.LC_ALL, "de_DE.UTF-8")
 except locale.Error:
@@ -99,15 +123,20 @@ def customerIdFromName(name):
 def productIdsFromSupplier(shopName, productCode):
     shop_id = getId('res.partner', [('name', '=', shopName)])
     try:
-        supplierinfo_id = getId('product.supplierinfo', [('name', '=', shop_id), ('product_code', '=', productCode)])
+        supplierinfo_id = getId('product.supplierinfo',
+                                [('name', '=', shop_id),
+                                 ('product_code', '=', productCode)])
     except NotFound:
         return {'product': None, 'supplierinfo': None,  'shop': shop_id}
-    product_id = readProperty('product.supplierinfo', supplierinfo_id, 'product_id', True)
+    product_id = readProperty('product.supplierinfo',
+                              supplierinfo_id,
+                              'product_id', True)
     return {'product': product_id, 'supplierinfo': supplierinfo_id}
 
 
 def getDefault(db, fields):
-    # TODO does not send the id of the currently edited record like the web-GUI does. still works.
+    # TODO does not send the id of the currently edited record
+    # like the web-GUI does. still works.
     return oerp.execute(db, 'default_get', fields)
 
 
@@ -122,8 +151,10 @@ def callOnchangeHandler(db, field, value):
     oerp.create(db, data)
     """
     reply = oerp.execute(db, 'onchange_'+field, [], value)
-    # TODO does not send the id of the currently edited record like the web-GUI does. still works.
-    assert (not reply.has_key('warning') or not reply["warning"]), "failed calling onchange-handler,  reply:"+str(reply)
+    # TODO does not send the id of the currently edited record
+    # like the web-GUI does. still works.
+    assert ("warning" not in reply.keys() or not reply["warning"]), \
+        "failed calling onchange-handler,  reply:"+str(reply)
     # TODO .has_key is deprecated!
     update = dict(reply["value"])
     update[field] = value
