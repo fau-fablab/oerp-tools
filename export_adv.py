@@ -9,15 +9,21 @@ try:
 except ImportError:
     print >> sys.stderr, "Consider installing argcomplete"
 
-# Hoffmann supplier ID
-hoffmann_id = 47
+
+# supported suppliers
+supplier_ids = {47: 'hoffmann', 116: 'textil'}
+
+# initiating output variables
+products_fail = []
+products_warnings = []
+csv_output = []
 
 
-def hoffmannCSV():
+def convert_order():
     """
-    Converts an ERP purchase order to an Hoffmann comaptible .csv file
+    Checks if purchase order exists, isn't emtpy and converts an ERP purchase order
+    to an supplier comaptible file
     """
-
     # parsing input arguments
     args = parse_args()
 
@@ -29,7 +35,7 @@ def hoffmannCSV():
 
     # set fileName [default = orderName]
     fileName = args.fileName
-    if fileName == '':
+    if fileName == None:
         fileName = orderName
 
     # get purchase from input
@@ -43,16 +49,14 @@ def hoffmannCSV():
     # get purchase ID
     purchase_id = purchase[0]
 
-    # check if purchase is by Hoffmann
-    if oerp.browse('purchase.order', purchase_id).partner_id.id != hoffmann_id:
-        print_error(orderName + ' is not a Hoffmann order.')
+
+    # check if purchase is supported
+    supplier_id = oerp.read('purchase.order', purchase_id, ["partner_id"])['partner_id'][0]
+
+    if supplier_id not in supplier_ids:
+        print_error(orderName + ' is not by a supported supplier.')
         exit(1)
-
-    # initiating output variables
-    csv_output = ["Item No.;Size;Quantity"]
-    products_fail = []
-    products_warnings = []
-
+    
     # get line IDs from purchase
     purchase_lines = oerp.read('purchase.order', purchase_id, ["order_line"])['order_line']
 
@@ -65,6 +69,9 @@ def hoffmannCSV():
     line_list = oerp.read('purchase.order.line',
                           purchase_lines,
                           ['product_id', 'product_qty'])
+
+    supplier = supplier_ids[supplier_id]
+
 
     # iterate over purchase lines
     for line in line_list:
@@ -88,49 +95,92 @@ def hoffmannCSV():
             continue
         else:
             # check boolean if one seller is Hoffmann this will get true
-            seller_is_hoffmann = False
+            seller_is_true = False
             # get relevant supplier fields
             supplier = oerp.read('product.supplierinfo', seller_ids, ['name', 'product_code'])
             # iterate over suppliers
             for seller in supplier:
                 # check if Hoffmann is supplier
-                if seller['name'][0] != hoffmann_id:
+                if seller['name'][0] != supplier_id:
                     continue
                 else:
                     # set check boolean true
-                    seller_is_hoffmann = True
+                    seller_is_true = True
                     # get product_code
                     product_code = seller['product_code']
                     # check if product_code isnt empty
                     if product_code:
                         product_code = product_code.strip()
                         # check if pruduct is multi variant
-                        if product['is_multi_variants']:
-                            # get product_size out of multi variant
-                            product_size = findVariant(product['variants'], product['variant_model_name']).strip()
-                            product_code = product_code[:6].strip()
-                        else:
-                            # if not multivariant divide product_code in Hoffmann product_code and Hoffmann product_size
-                            product_size = product_code[6:].strip()
-                            product_code = product_code[:6].strip()
-
+                        if supplier_id == 47:
+                            initCSVoutput("Item No.;Size;Quantity")
+                            product_size = hoffmannCSV(product_code, product, line)
+                        elif supplier_id == 116:
+                            initCSVoutput("Typ;Farbe;Größe;Anzahl")
+                            product_size = textilCSV(product_code, product, line)
                         # check if product_size is empty, save warning for later output
                         if product_size == '':
                             products_warnings.append(('[' + str(product['default_code']) + '] ' + product['name'] + ' has no size, please check.'))
-                        # write CSV line in Hoffmann style
-                        csv_output.append(product_code + ";" + product_size + ";" + str(int(line['product_qty'])))
                     # save error if product_code is empty
                     else:
                         products_fail.append(('[' + str(product['default_code']) + '] ' + product['name'] + ' has no code and was ignored.'))
             # save error if Hoffmann was no supplier
-            if seller_is_hoffmann is False:
-                products_fail.append(('[' + str(product['default_code']) + '] ' + product['name'] + ' is not supplied by Hoffmann and was ignored.'))
+            if seller_is_true is False:
+                products_fail.append(('[' + str(product['default_code']) + '] ' + product['name'] + ' is not supplied by ' + supplier + ' and was ignored.'))
+    
 
     # write CSV file
     writeToFile(fileName, csv_output)
 
     # print conclusion of conversion
     conclusionPrinting(csv_output, products_fail, products_warnings, purchase_lines, fileName)
+
+
+
+def initCSVoutput(text):
+    if len(csv_output) == 0:
+        csv_output.append(text)
+
+        
+
+def hoffmannCSV(product_code, product, line):
+    # check if pruduct is multi variant
+    if product['is_multi_variants']:
+        # get product_size out of multi variant
+        product_size = findVariant(product['variants'], product['variant_model_name']).strip()
+        product_code = product_code[:6].strip()
+    else:
+        # if not multivariant divide product_code in Hoffmann product_code and Hoffmann product_size
+        product_size = product_code[6:].strip()
+        product_code = product_code[:6].strip()
+
+    # write CSV line in Hoffmann style
+    csv_output.append(product_code + ";" + product_size + ";" + str(int(line['product_qty'])))
+    return product_size
+
+
+def textilCSV(product_code, product, line):
+    # check if pruduct is multi variant
+    if product['is_multi_variants']:
+        # get product_size out of multi variant
+        product_size = findVariant(product['variants'], product['variant_model_name']).strip()
+        product_size_1 = product_size[:product_size.find('-')].strip()
+        product_size_2 = product_size[product_size.rfind('-')+1:].strip()
+    else:
+        # if not multivariant UNTESTED
+        product_size_2 = product_code[product_code.rfind('-')+1:].strip()
+        product_code_without_size_2 = product_code[:product_code.rfind('-')].strip()
+        product_size_1 = product_code_without_size_2[product_code_without_size_2.rfind('-')+1:].strip()
+        product_code_without_size = product_code_without_size_2[:product_code_without_size_2.rfind('-')].strip()
+        product_code = product_code_without_size[product_code_without_size.rfind(' '):].strip()
+
+    # write CSV line in Hoffmann style
+    csv_output.append(product_code + ";" + product_size_2 + ";" + product_size_1 + ";" + str(int(line['product_qty'])))
+    return (product_size_2 + product_size_1)
+
+
+
+
 
 
 def writeToFile(fileName, csv_output):
@@ -200,9 +250,9 @@ def parse_args():
     """
     parser = argparse.ArgumentParser(description=__doc__)
 
-    parser.add_argument('orderName', type=str,
-                        help='Which Hoffmann order should be parsed to a CVS file?')
-    parser.add_argument('fileName', type=str,
+    parser.add_argument('orderName', type=str, nargs='?',
+                        help='Which order should be parsed to a CVS file?')
+    parser.add_argument('fileName', type=str, nargs='?',
                         help='Which name should the CVS file get?')
 
     try:
@@ -226,4 +276,4 @@ def print_warning(message):
     print >> sys.stdout, "[i] %s" % message
 
 if __name__ == "__main__":
-    hoffmannCSV()
+    convert_order()
