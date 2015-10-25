@@ -1,6 +1,7 @@
 #!/usr/bin/env python2.7
 # -*- coding: cp1252 -*-
 from oerphelper import *
+from operator import itemgetter
 import argparse
 import sys
 
@@ -111,13 +112,18 @@ def convert_order():
                     # check if product_code isnt empty
                     if product_code:
                         product_code = product_code.strip()
-                        # check if pruduct is multi variant
+                        
+                        # Hoffmann
                         if supplier_id == 47:
-                            initCSVoutput("Item No.;Size;Quantity")
+                            # if CSV is empty, add header
+                            initCSVoutput(["Item No.", "Size", "Quantity"])
                             product_size = hoffmannCSV(product_code, product, line)
+                        # Textil
                         elif supplier_id == 116:
-                            initCSVoutput("Typ;Farbe;Größe;Anzahl")
+                            # if CSV is empty, add header
+                            initCSVoutput(["Typ","Farbe","Größe","Anzahl"])
                             product_size = textilCSV(product_code, product, line)
+                            
                         # check if product_size is empty, save warning for later output
                         if product_size == '':
                             products_warnings.append(('[' + str(product['default_code']) + '] ' + product['name'] + ' has no size, please check.'))
@@ -127,8 +133,18 @@ def convert_order():
             # save error if Hoffmann was no supplier
             if seller_is_true is False:
                 products_fail.append(('[' + str(product['default_code']) + '] ' + product['name'] + ' is not supplied by ' + supplier + ' and was ignored.'))
-    
 
+
+    # sort List if Textil-Großhandel
+    if supplier_id == 116:
+        # sort by T-Shirt size
+        csv_output[1:] = sorted(csv_output[1:], key=lambda d: ["XS","S","M","L","XL","XXL"].index(d[2]))
+        # sort by T-Shirt color
+        csv_output[1:] = sorted(csv_output[1:], key=itemgetter(1))
+        # sort by T-Shirt Type
+        csv_output[1:] = sorted(csv_output[1:], key=itemgetter(0))
+        
+    
     # write CSV file
     writeToFile(fileName, csv_output)
 
@@ -155,7 +171,7 @@ def hoffmannCSV(product_code, product, line):
         product_code = product_code[:6].strip()
 
     # write CSV line in Hoffmann style
-    csv_output.append(product_code + ";" + product_size + ";" + str(int(line['product_qty'])))
+    csv_output.append([product_code, product_size, str(int(line['product_qty']))])
     return product_size
 
 
@@ -175,7 +191,7 @@ def textilCSV(product_code, product, line):
         product_code = product_code_without_size[product_code_without_size.rfind(' '):].strip()
 
     # write CSV line in Hoffmann style
-    csv_output.append(product_code + ";" + product_size_2 + ";" + product_size_1 + ";" + str(int(line['product_qty'])))
+    csv_output.append([product_code, product_size_2, product_size_1, str(int(line['product_qty']))])
     return (product_size_2 + product_size_1)
 
 
@@ -191,7 +207,7 @@ def writeToFile(fileName, csv_output):
     if len(csv_output) > 1:
         thefile = open(str(fileName) + '.csv', 'w+')
         for item in csv_output:
-            thefile.write("%s\n" % item)
+            thefile.write("%s\n" % ';'.join(item))
         thefile.close()
 
 
