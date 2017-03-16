@@ -88,7 +88,7 @@ def convert_order():
                              'variant_model_name',
                              'default_code',
                              'is_multi_variants'])
-        # get seller IDs of the produce
+        # get seller IDs of the product
         seller_ids = product['seller_ids']
         # check minimum one seller available
         if not seller_ids:
@@ -121,7 +121,7 @@ def convert_order():
                         # Textil
                         elif supplier_id == 116:
                             # if CSV is empty, add header
-                            initCSVoutput(["Typ","Farbe","Größe","Anzahl"])
+                            initCSVoutput(["Typ","Farbe","GrÃ¶ÃŸe","Anzahl"])
                             product_size = textilCSV(product_code, product, line)
                             
                         # check if product_size is empty, save warning for later output
@@ -135,7 +135,7 @@ def convert_order():
                 products_fail.append(('[' + str(product['default_code']) + '] ' + product['name'] + ' is not supplied by ' + supplier + ' and was ignored.'))
 
 
-    # sort List if Textil-Großhandel
+    # sort List if Textil-GroÃŸhandel
     if supplier_id == 116:
         # sort by T-Shirt size
         csv_output[1:] = sorted(csv_output[1:], key=lambda d: ["XS","S","M","L","XL","XXL"].index(d[2]))
@@ -169,6 +169,10 @@ def hoffmannCSV(product_code, product, line):
         # if not multivariant divide product_code in Hoffmann product_code and Hoffmann product_size
         product_size = product_code[6:].strip()
         product_code = product_code[:6].strip()
+        
+    # cutoff wrong product_size endings (e.g. diameter 1,0 => 1)
+    if product_size[-2:]==',0':
+        product_size = product_size[:-2]
 
     # write CSV line in Hoffmann style
     csv_output.append([product_code, product_size, str(int(line['product_qty']))])
@@ -190,7 +194,7 @@ def textilCSV(product_code, product, line):
         product_code_without_size = product_code_without_size_2[:product_code_without_size_2.rfind('-')].strip()
         product_code = product_code_without_size[product_code_without_size.rfind(' '):].strip()
 
-    # write CSV line in Hoffmann style
+    # write CSV line in Textil style
     csv_output.append([product_code, product_size_2, product_size_1, str(int(line['product_qty']))])
     return (product_size_2 + product_size_1)
 
