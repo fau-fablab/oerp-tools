@@ -25,11 +25,14 @@ OERP_PRODUCT_NAMES = {
     'DIN 912': u'Zylinderschraube\xa0DIN\xa0912\xa0‐ {groesse}\xa0‐\xa08.8',
 }
 
+# ID supplier "Wegertseder"
 Wegertseder_id = 202
 
 def updatePriceWegertseder():
+    # Array for Labes who have to be renewed
     NewLabelsToPrint = []
     with open(CSV_FILE_NAME, 'r') as csvfile:
+        # Read CSV file to dict
         reader = DictReader(csvfile, delimiter=';')
         for row in reader:
             name = ''
@@ -53,7 +56,7 @@ def updatePriceWegertseder():
                 print('name: %s (ID: %i)' % (name, prod_id[0]))
                 if (len(prod_id) > 1):
                     print('Error: More then one product found!')
-                    break
+                    continue
                 else:
                     product = oerp.read('product.product',
                                         prod_id[0],
@@ -85,8 +88,8 @@ def updatePriceWegertseder():
                                             print('Sales price has to be updated from %.2f € to %.2f €' % (oldPrice, product.list_price))
                                             NewLabelsToPrint.append(int(product.default_code))
                                             updateNeeded = True
-                                        #if updateNeeded:
-                                            #oerp.write_record(product)
+                                        if updateNeeded:
+                                            oerp.write_record(product)
     print('The following products need new Labels:')
     print(NewLabelsToPrint)
 
@@ -94,6 +97,7 @@ def updatePriceWegertseder():
 
 def addWegertseder():
     with open(CSV_FILE_NAME, 'r') as csvfile:
+        # Read CSV file to dict
         reader = DictReader(csvfile, delimiter=';')
         for row in reader:
             name = ''
@@ -117,7 +121,7 @@ def addWegertseder():
                 print('name: %s (ID: %i)' % (name, prod_id[0]))
                 if (len(prod_id) > 1):
                     print('Error: More then one product found!')
-                    break
+                    continue
                 else:
                     product = oerp.read('product.product',
                                         prod_id[0],
