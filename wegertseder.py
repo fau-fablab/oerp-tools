@@ -22,7 +22,7 @@ CSV_FILE_NAME = './wegertseder.csv'
 OERP_PRODUCT_NAMES = {
     'DIN 7991': u'Senkschraube\xa0DIN\xa07991\xa0‐ {groesse}\xa0‐\xa08.8',
     'DIN 933': u'Sechskantschraube\xa0DIN\xa0933\xa0‐ {groesse}\xa0‐\xa08.8',
-    'DIN 912': u'Zylinderschraube\xa0DIN\xa0912 ‐ {groesse}\xa0‐\xa08.8',
+    'DIN 912': u'Zylinderschraube\xa0DIN\xa0912\xa0‐ {groesse}\xa0‐\xa08.8',
 }
 
 Wegertseder_id = 202
@@ -83,10 +83,10 @@ def updatePriceWegertseder():
                                             oldPrice = product.list_price
                                             product.list_price = max(round(product.standard_price * 1.5, 2), 0.05)
                                             print('Sales price has to be updated from %.2f € to %.2f €' % (oldPrice, product.list_price))
-                                            NewLabelsToPrint.append(prod_id[0])
+                                            NewLabelsToPrint.append(int(product.default_code))
                                             updateNeeded = True
-                                        if updateNeeded:
-                                            oerp.write_record(product)
+                                        #if updateNeeded:
+                                            #oerp.write_record(product)
     print('The following products need new Labels:')
     print(NewLabelsToPrint)
 
