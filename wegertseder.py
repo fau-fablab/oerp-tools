@@ -87,10 +87,10 @@ def updatePriceWegertseder():
                                             updateNeeded = True
                                         if updateNeeded:
                                             oerp.write_record(product)
-                return #remove before flight
+    print('The following products need new Labels:')
+    print(NewLabelsToPrint)
+
                                     
-
-
 
 def addWegertseder():
     with open(CSV_FILE_NAME, 'r') as csvfile:
@@ -160,7 +160,6 @@ def addWegertseder():
                                            row["anzahl_mittel"],
                                            quantity)
                         print('Supplier sucessfully added!')    
-                return #remove before flight
 
 
 
