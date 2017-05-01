@@ -36,7 +36,7 @@
             <h1>Webinterface for OERP-Tools</h1>
 <?php
     $n = 5;
-    if ( isset( $_GET['n'] ) && is_int( $_GET['n'] ) ) {
+    if ( isset( $_GET['n'] ) && is_numeric( $_GET['n'] ) ) {
         $n = intval( $_GET['n'] );
     }
     $consecutive = false;
