@@ -19,6 +19,8 @@ from __future__ import unicode_literals
 import logging
 import argparse
 import sys
+import sqlite3
+from datetime import date
 
 __authors__ = "Patrick Kanzler <patrick.kanzler@fablab.fau.de>"
 __license__ = "GPLv3"
@@ -44,6 +46,33 @@ def print_error(message):
     print("[!] {}".format(message), file=sys.stderr)
 
 
+def get_database_handle():
+    """ returns a database handle
+    """
+    database_file = 'snapshotOhnePins.sqlite3'
+    logger.debug('connecting to database {}'.format(database_file))
+    conn = sqlite3.connect(database_file)
+    return conn
+
+
+def get_products_from_day(conn, dateday):
+    """ returns list of (product, quantity) for a day (specified as day)
+    """
+    #TODO day-feature
+    c = conn.cursor()
+
+    t = ("{}%".format(dateday.strftime('%Y-%m-%d')),)
+    query = "SELECT * FROM position WHERE rechnung in (SELECT id FROM rechnung WHERE datum LIKE ?);"
+    queryresult = c.execute(query, t)
+
+    result = []
+    for row in queryresult:
+        productrow = (row[6], row[2])
+        result.append(productrow)
+
+    return result
+
+
 def parse_args():
     """
     Parses the command line arguments and returns them in an object
@@ -58,6 +87,11 @@ def parse_args():
 
 def main():
     args = parse_args()
+    #TODO in funktion setzen
+    conn = get_database_handle()
+    get_products_from_day(conn, date(2017,8,17))
+    get_products_from_day(conn, date.today())
+    print(get_products_from_day(conn, date(2017,8,14)))
 
 
 if __name__ == "__main__":
