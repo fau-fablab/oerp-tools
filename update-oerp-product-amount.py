@@ -67,7 +67,7 @@ def get_products_from_day(conn, dateday):
 
     result = []
     for row in queryresult:
-        productrow = (row[6], row[2])
+        productrow = (row[6], row[2], row[3])
         result.append(productrow)
 
     return result
