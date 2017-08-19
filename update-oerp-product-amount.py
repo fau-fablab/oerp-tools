@@ -21,13 +21,15 @@ import argparse
 import sys
 import sqlite3
 from datetime import date
+from oerphelper import *
+import oerplib
 
 __authors__ = "Patrick Kanzler <patrick.kanzler@fablab.fau.de>"
 __license__ = "GPLv3"
 __copyright__ = "Copyright (C) 2017 {}".format(__authors__)
 
 logging.basicConfig(level=logging.DEBUG)
-logger = logging.getLogger(__name__)
+logger = logging.getLogger('update-oerp-product-amount')
 
 logger.debug('initializing logger')
 
@@ -46,6 +48,13 @@ def print_error(message):
     print("[!] {}".format(message), file=sys.stderr)
 
 
+def print_info(message):
+    """ prints a info message to stdout
+    """
+    logger.info(message)
+    print("[i] {}".format(message), file=sys.stdout)
+
+
 def get_database_handle():
     """ returns a database handle
     """
@@ -58,19 +67,35 @@ def get_database_handle():
 def get_products_from_day(conn, dateday):
     """ returns list of (product, quantity) for a day (specified as day)
     """
-    #TODO day-feature
     c = conn.cursor()
 
     t = ("{}%".format(dateday.strftime('%Y-%m-%d')),)
     query = "SELECT * FROM position WHERE rechnung in (SELECT id FROM rechnung WHERE datum LIKE ?);"
+    logger.debug('searching register-database for products on {}'.format(t))
     queryresult = c.execute(query, t)
 
     result = []
     for row in queryresult:
         productrow = (row[6], row[2], row[3])
         result.append(productrow)
-
+    logger.debug('found products: {}'.format(result))
     return result
+
+
+def extract_code_from_db_product(product):
+    """ returns the code from the database product
+    """
+    return product[0]
+
+
+def get_product_from_code(product_code):
+    """ returns the product from the code
+    """
+    logger.debug('searching prduct with code "{}"'.format(product_code))
+    product_id = getId('product.product', [('default_code', '=', product_code)])
+    product = read('product.product', product_id, ['name', 'id', 'qty_available', 'type', 'uom_id'])
+    logger.debug('found product "{}"'.format(product))
+    return product
 
 
 def parse_args():
@@ -89,9 +114,20 @@ def main():
     args = parse_args()
     #TODO in funktion setzen
     conn = get_database_handle()
+
     get_products_from_day(conn, date(2017,8,17))
     get_products_from_day(conn, date.today())
-    print(get_products_from_day(conn, date(2017,8,14)))
+    get_products_from_day(conn, date(2017,8,14))
+
+    filtered_products = []
+    filter_date = date(2017, 8, 14)
+    for product in get_products_from_day(conn, filter_date):
+        erp_product = get_product_from_code(extract_code_from_db_product(product))
+        if erp_product['type'] == 'consu':
+            filtered_products.append(erp_product)
+    logger.info('filtered products from {} and got: {}'.format(filter_date, filtered_products))
+
+
 
 
 if __name__ == "__main__":
