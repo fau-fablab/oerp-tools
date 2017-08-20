@@ -21,7 +21,7 @@ import argparse
 import sys
 import sqlite3
 from datetime import date
-from oerphelper import *
+from oerphelper import oerp, getId
 import oerplib
 
 __authors__ = "Patrick Kanzler <patrick.kanzler@fablab.fau.de>"
@@ -70,30 +70,44 @@ def get_products_from_day(conn, dateday):
     c = conn.cursor()
 
     t = ("{}%".format(dateday.strftime('%Y-%m-%d')),)
-    query = "SELECT * FROM position WHERE rechnung in (SELECT id FROM rechnung WHERE datum LIKE ?);"
+    query = ("SELECT * FROM position WHERE rechnung in "
+             "(SELECT id FROM rechnung WHERE datum LIKE ?);")
     logger.debug('searching register-database for products on {}'.format(t))
     queryresult = c.execute(query, t)
 
-    result = []
+    result = {}
     for row in queryresult:
-        productrow = (row[6], row[2], row[3])
-        result.append(productrow)
+        if row[6] in result:
+            new_amount = result[row[6]][0] + float(row[2])
+            result[row[6]] = (new_amount, row[3])
+            logger.debug('added new amount {} to entry {}: {}'.format(
+                float(row[2]),
+                row[6], new_amount
+                ))
+        else:
+            result[row[6]] = (float(row[2]), row[3])
+            logger.debug('update dict with {}'.format({
+                row[6]: (float(row[2]), row[3])
+                }))
     logger.debug('found products: {}'.format(result))
     return result
-
-
-def extract_code_from_db_product(product):
-    """ returns the code from the database product
-    """
-    return product[0]
 
 
 def get_product_from_code(product_code):
     """ returns the product from the code
     """
-    logger.debug('searching prduct with code "{}"'.format(product_code))
-    product_id = getId('product.product', [('default_code', '=', product_code)])
-    product = read('product.product', product_id, ['name', 'id', 'qty_available', 'type', 'uom_id'])
+    logger.debug('searching product with code "{}"'.format(product_code))
+    product_id = getId('product.product',
+                       [('default_code', '=', product_code)])
+
+    # product = read('product.product', product_id,
+    #        ['default_code', 'name', 'id', 'qty_available', 'type', 'uom_id'])
+    # products = searchAndBrowse('product.product', [('default_code', '=', product_code)])
+
+    # for product in products:
+    #    print(product)
+
+    product = oerp.browse('product.product', product_id)
     logger.debug('found product "{}"'.format(product))
     return product
 
@@ -112,22 +126,89 @@ def parse_args():
 
 def main():
     args = parse_args()
-    #TODO in funktion setzen
+    # TODO in funktion setzen
     conn = get_database_handle()
 
-    get_products_from_day(conn, date(2017,8,17))
-    get_products_from_day(conn, date.today())
-    get_products_from_day(conn, date(2017,8,14))
+    # get_products_from_day(conn, date(2017,8,17))
+    # get_products_from_day(conn, date.today())
+    # get_products_from_day(conn, date(2017,8,14))
 
     filtered_products = []
     filter_date = date(2017, 8, 14)
-    for product in get_products_from_day(conn, filter_date):
-        erp_product = get_product_from_code(extract_code_from_db_product(product))
-        if erp_product['type'] == 'consu':
+    database_products = get_products_from_day(conn, filter_date)
+    logger.info('found products in database: {}'.format(database_products))
+    conn.close()
+
+    consu = "consu"
+    for product in database_products:
+        erp_product = get_product_from_code(product)
+        if erp_product.type == consu:
             filtered_products.append(erp_product)
-    logger.info('filtered products from {} and got: {}'.format(filter_date, filtered_products))
+    logger.info('filtered products that are {} from {} and got: {}'.format(
+        consu,
+        filter_date,
+        filtered_products
+        ))
 
+    logger.debug('updating list with new quantities')
+    for i, product in enumerate(filtered_products):
+        product_code = product.default_code
+        if product.uom_id.name == database_products[product_code][1]:
+            logger.debug('sanity check for {} passed: UOMs are the same ({})'.format(
+                product_code,
+                product.uom_id.name
+                ))
+            qty_old = filtered_products[i].qty_available
+            qty_update = database_products[product_code][0]
+            filtered_products[i].qty_available = qty_old - qty_update
+            logger.debug('substracting {} from {}'.format(
+                qty_update,
+                product_code
+                ))
+    logger.info('updated qty: {}'.format(filtered_products))
 
+    logger.debug('write new values to OERP')
+    for _, product in enumerate(filtered_products):
+        p_id = product.id
+        p_code = product.default_code
+        new_qty = product.qty_available
+        # oerp.write_record(product) # das geht so nicht, weil qty_available readonly ist
+        no_location = False
+        if product.location_id:
+            loc_id = product.location_id
+        elif (product.categ_id.property_stock_location and
+              product.categ_id.property_stock_location.id):
+            loc_id = product.categ_id.property_stock_location.id
+        else:
+            no_location = True
+
+        if not no_location:
+            try:
+                change_id = oerp.execute_kw('stock.change.product.qty',
+                                            'create', [{
+                                                        'product_id': p_id,
+                                                        'location_id': loc_id,
+                                                        'new_quantity': new_qty,
+                                                        }])
+                print(change_id)
+                oerp.execute('stock.change.product.qty',
+                             'change_product_qty', [change_id, ])
+                # oerp.execute_kw('stock.change.product.qty', 'change_product_qty', [{'product_id': p_id, 'location_id': location_id, 'new_quantity': new_qty}], context=oerpContext)
+                # oerp.execute_kw('stock.change.product.qty', 'change_product_qty')
+            except oerplib.error.RPCError as e:
+                print(e)
+                print(e[1])
+                # print(e.message)
+                # print(e.oerp_traceback)
+            logger.info('update product {} with qty {}'.format(
+                p_code,
+                new_qty
+                ))
+        else:
+            logger.info('Code {} has no location! Cannot update!'.format(
+                p_code
+                ))
+    logger.debug('done')
 
 
 if __name__ == "__main__":
