@@ -185,6 +185,7 @@ def main():
 
     filtered_products = []
     filter_date = date(2017, 8, 14)
+    filter_date = date.today()
     database_products = get_products_from_day(conn, filter_date)
     database_invoices = get_invoices_from_day(conn, filter_date)
     logger.info('found products in database: {}'.format(database_products))
