@@ -23,6 +23,7 @@ import sqlite3
 from datetime import date
 from oerphelper import oerp, getId
 import oerplib
+from ConfigParser import ConfigParser
 
 __authors__ = "Patrick Kanzler <patrick.kanzler@fablab.fau.de>"
 __license__ = "GPLv3"
@@ -40,6 +41,8 @@ except ImportError:
         print_error("Consider installing argcomplete")
     autocomplete = autocomplete_wrapper
 
+
+cfg = ConfigParser({'anonymous_partner_id': 87})
 
 def print_error(message):
     """ prints an error message to stderr
@@ -62,6 +65,53 @@ def get_database_handle():
     logger.debug('connecting to database {}'.format(database_file))
     conn = sqlite3.connect(database_file)
     return conn
+
+
+def get_invoices_from_day(conn, dateday):
+    """ returns all invoices on a certain day
+    """
+    c = conn.cursor()
+
+    t = ("{}%".format(dateday.strftime('%Y-%m-%d')),)
+    query = ("SELECT id FROM rechnung WHERE datum LIKE ?;")
+    logger.debug('searching all invoices on {}'.format(t))
+    queryresult = c.execute(query, t)
+
+    result = {}
+    for id in queryresult:
+        invoice = "{}".format(id[0])
+        result[invoice] = get_products_from_invoice_number(conn, invoice)
+    logger.debug('found invoices {}'.format(result))
+    return result
+
+
+def get_products_from_invoice_number(conn, invoice):
+    """ returns all products in an invoice
+    """
+    c = conn.cursor()
+
+    query = ("SELECT * FROM position WHERE rechnung is ?;")
+    logger.debug('searching register-database for products on invoice {}'.format(invoice))
+    queryresult = c.execute(query, (invoice, ))
+    result = {}
+    for row in queryresult:
+        if row[6] in result:
+            new_amount = result[row[6]][0] + float(row[2])
+            result[row[6]] = (new_amount, row[3])
+            logger.debug('added new amount {} to entry {}: {}'.format(
+                float(row[2]),
+                row[6], new_amount
+                ))
+        else:
+            result[row[6]] = (float(row[2]), row[3])
+            logger.debug('update dict with {}'.format({
+                row[6]: (float(row[2]), row[3])
+                }))
+    logger.debug("found the these products on invoice {}: {}".format(
+        invoice,
+        result,
+        ))
+    return result
 
 
 def get_products_from_day(conn, dateday):
@@ -136,79 +186,76 @@ def main():
     filtered_products = []
     filter_date = date(2017, 8, 14)
     database_products = get_products_from_day(conn, filter_date)
+    database_invoices = get_invoices_from_day(conn, filter_date)
     logger.info('found products in database: {}'.format(database_products))
     conn.close()
 
-    consu = "consu"
-    for product in database_products:
-        erp_product = get_product_from_code(product)
-        if erp_product.type == consu:
-            filtered_products.append(erp_product)
-    logger.info('filtered products that are {} from {} and got: {}'.format(
-        consu,
-        filter_date,
-        filtered_products
-        ))
+    #TODO pay_journal_id =
+    pay_journal_id = 8
+    #TODO unterscheidung für FAUcard und Bargeld
 
-    logger.debug('updating list with new quantities')
-    for i, product in enumerate(filtered_products):
-        product_code = product.default_code
-        if product.uom_id.name == database_products[product_code][1]:
-            logger.debug('sanity check for {} passed: UOMs are the same ({})'.format(
-                product_code,
-                product.uom_id.name
-                ))
-            qty_old = filtered_products[i].qty_available
-            qty_update = database_products[product_code][0]
-            filtered_products[i].qty_available = qty_old - qty_update
-            logger.debug('substracting {} from {}'.format(
-                qty_update,
-                product_code
-                ))
-    logger.info('updated qty: {}'.format(filtered_products))
+    try:
+        for invoice in database_invoices:
+            logger.info('parsing invoice {}'.format(invoice))
+            #TODO partner_id = cfg.getint('anonymous_partner_id')
+            partner_id = 87
+            order_data = oerp.execute('sale.order', 'onchange_partner_id', [], partner_id)
+            logger.debug(order_data)
+            #assert not order_data['warning'], print_error("failed getting default values for sale.order")
+            order_data = order_data['value']
+            invoice_line = 'RN Kasse {}'.format(invoice)
+            order_data.update({'partner_id': partner_id,
+                               'order_policy': 'manual',
+                               'picking_policy': 'one',
+                               'client_order_ref': invoice_line})
+            order_id = oerp.create('sale.order', order_data)
+            logger.debug('created order {}'.format(order_id))
 
-    logger.debug('write new values to OERP')
-    for _, product in enumerate(filtered_products):
-        p_id = product.id
-        p_code = product.default_code
-        new_qty = product.qty_available
-        # oerp.write_record(product) # das geht so nicht, weil qty_available readonly ist
-        no_location = False
-        if product.location_id:
-            loc_id = product.location_id
-        elif (product.categ_id.property_stock_location and
-              product.categ_id.property_stock_location.id):
-            loc_id = product.categ_id.property_stock_location.id
-        else:
-            no_location = True
+            for product_code in database_invoices[invoice]:
+                logger.debug('parsing product {}'.format(product_code))
+                product_qty = database_invoices[invoice][product_code][0]
+                product_id = get_product_from_code(product_code).id
+                order_line_data = oerp.execute(
+                        'sale.order.line', 'product_id_change', [],
+                        order_data['pricelist_id'], product_id, product_qty,
+                        # UOM  qty_uos UOS    Name   partner_id
+                        False, 0, False, '',  partner_id)['value']
+                order_line_data.update({'order_id': order_id, 'product_id': product_id,
+                        'product_uom_qty': product_qty})
+                logger.debug(order_line_data)
+                order_line_id = oerp.create('sale.order.line', order_line_data)
+                logger.debug('created order line {}'.format(order_line_id))
+            logger.debug('finishing sale order {}'.format(invoice))
+            oerp.exec_workflow('sale.order', 'order_confirm', order_id)
+            picking_id = oerp.read('sale.order', order_id, ['picking_ids'])['picking_ids']
+            if picking_id:
+                # No picking list is created if only services are bought
+                picking_id = picking_id[0]
+                oerp.write('stock.picking.out', picking_id, {'auto_picking': True})
 
-        if not no_location:
-            try:
-                change_id = oerp.execute_kw('stock.change.product.qty',
-                                            'create', [{
-                                                        'product_id': p_id,
-                                                        'location_id': loc_id,
-                                                        'new_quantity': new_qty,
-                                                        }])
-                print(change_id)
-                oerp.execute('stock.change.product.qty',
-                             'change_product_qty', [change_id, ])
-                # oerp.execute_kw('stock.change.product.qty', 'change_product_qty', [{'product_id': p_id, 'location_id': location_id, 'new_quantity': new_qty}], context=oerpContext)
-                # oerp.execute_kw('stock.change.product.qty', 'change_product_qty')
-            except oerplib.error.RPCError as e:
-                print(e)
-                print(e[1])
-                # print(e.message)
-                # print(e.oerp_traceback)
-            logger.info('update product {} with qty {}'.format(
-                p_code,
-                new_qty
-                ))
-        else:
-            logger.info('Code {} has no location! Cannot update!'.format(
-                p_code
-                ))
-    logger.debug('done')
+            invoice_id = oerp.execute('sale.order', 'action_invoice_create', [order_id])
+            oerp.exec_workflow('account.invoice', 'invoice_open', invoice_id)
+
+            logger.debug('finishing payment')
+            #TODO cash, faucard und kassenbuch trennen (weil zB kassenbuch sonst doppelt verbucht wird)
+            current_period = oerp.execute('account.period', 'find')[0]
+            pay_account_id = oerp.read(
+                    'account.journal',
+                    pay_journal_id,
+                    ['default_debit_account_id'])['default_debit_account_id'][0]
+
+            oerp.execute('account.invoice', 'pay_and_reconcile',
+                    [invoice_id],
+                    False,
+                    pay_account_id, current_period, pay_journal_id,
+                    False, False, False,
+                    oerp.context)
+
+            paid = oerp.read('account.invoice', invoice_id, ['state'])['state'] == 'paid'
+            oerp.execute('sale.order', 'action_done', order_id)
+    except oerplib.error.RPCError as e:
+        print_error(e[1])
+    logger.info('done!')
 
 
 if __name__ == "__main__":
