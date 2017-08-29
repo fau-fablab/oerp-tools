@@ -38,6 +38,7 @@ try:
     from argcomplete import autocomplete
 except ImportError:
     def autocomplete_wrapper(*args):
+        pass  # we do not need argcomplete atm
         print_error("Consider installing argcomplete")
     autocomplete = autocomplete_wrapper
 
