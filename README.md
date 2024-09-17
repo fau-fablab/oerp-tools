@@ -80,6 +80,16 @@ Then simply run:
   # ./erpReicheltImport.py basket.txt
 ```
 
+### - [`update-oerp-product-amount.py`](update-oerp-product-amount.py)
+```bash
+  # uses the config.ini that you have to create in this project (just copy config.ini.example and configure)
+  # you have to copy a current `snapshotOhnePins.sqlite3` from kassenterminal user on our server into the same directory
+
+  # copy all entries of today into the ERP (please use the testing database, it will create sale-orders, invoices and stock movements,
+  # currently all transactions are booked onto user with ID 87)
+  ./update-oerp-product-amount.py
+```
+
 ##Webinterface
 
 Make the `public` folder to a web root directory of a webserver and make following files readable / executeable for the webserver:

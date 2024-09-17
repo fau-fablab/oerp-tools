@@ -2,6 +2,11 @@
 *~
 config.ini
 *.csv
+#zum basteln
+snapshotOhnePins.sqlite3
+
+# VIM
+*.swp
 
 ####################################
 # Template für python gitignore:
