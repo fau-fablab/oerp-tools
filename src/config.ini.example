@@ -1,5 +1,6 @@
 [openerp]
-server = xn--eichhrnchen-vfb.fablab.fau.de
+# bei XXXX das Passwort gemäß https://wiki.fablab.fau.de/interna/erp einsetzen (Basic Auth)
+server = erp:XXXXXXXXXXXXXXXXXX@xn--eichhrnchen-vfb.fablab.fau.de
 port = 443
 user = kassenterminal
 password = foooobaaaar

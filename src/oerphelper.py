@@ -1,8 +1,8 @@
 """OERP shortcut package"""
 
-import oerplib
+import oerplib3 as oerplib
 import locale
-from ConfigParser import ConfigParser
+from configparser import ConfigParser
 import codecs
 import os
 
@@ -39,11 +39,11 @@ basepath = os.path.dirname(__file__)
 configfile = os.path.abspath(os.path.join(basepath, "config.ini"))
 
 cfg = ConfigParser({})
-cfg.readfp(codecs.open(configfile, 'r', 'utf8'))
+cfg.read_file(codecs.open(configfile, 'r', 'utf8'))
 
 use_test = cfg.get('openerp', 'use_test').lower().strip() == 'true'
 if use_test:
-    print "[i] use testing database."
+    print("[i] use testing database.")
 database = cfg.get('openerp', 'database_test') if use_test else cfg.get('openerp', 'database')
 oerp = oerplib.OERP(server=cfg.get('openerp', 'server'), protocol='xmlrpc+ssl',
                     database=database, port=cfg.getint('openerp', 'port'),
@@ -74,7 +74,7 @@ def getId(db, filter):
 
 def read(db, id, fields=[]):
     readResult = oerp.read(db, [id], fields, context=oerpContext)
-    if len(readResult) is not 1:
+    if len(readResult) != 1:
         raise NotFound()
     return readResult[0]
 
@@ -153,7 +153,7 @@ def callOnchangeHandler(db, field, value):
     reply = oerp.execute(db, 'onchange_'+field, [], value)
     # TODO does not send the id of the currently edited record
     # like the web-GUI does. still works.
-    assert ("warning" not in reply.keys() or not reply["warning"]), \
+    assert ("warning" not in list(reply.keys()) or not reply["warning"]), \
         "failed calling onchange-handler,  reply:"+str(reply)
     # TODO .has_key is deprecated!
     update = dict(reply["value"])

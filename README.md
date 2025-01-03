@@ -13,19 +13,26 @@ Hacky commandlinetools and a small webinterface for things that should rather be
  - `erpReicheltImport.py`: Imports Reichelt-shoppingcarts into the ERP automagically.
 
 ##Dependencies
-* [python2.7](https://www.python.org/download/releases/2.7/)
-* [ipython](http://ipython.org/)
-* [oerplib](https://pypi.python.org/pypi/OERPLib) (`sudo pip install oerplib`)
+* python3
+* oerplib3 (included locally)
 
 ##Usage
 ```bash
-  git clone --recursive  https://github.com/mgmax/oerp-tool-stuff
-  cd oerp-tools
+  git clone --recursive  https://github.com/fau-fablab/oerp-tools
+  cd oerp-tools/src
   cp config.ini.example config.ini
   # config.ini anpassen
   # Userlogin dafür verwenden
   # database Namen anpassen an Datenbanknamen (z.B. production, testing)
-  # und bei use_test True od. False eintragen (developement oder production)
+  # und bei use_test True od. False eintragen (development oder production)
+```
+
+### Docker
+```
+docker-compose build
+docker-compose run oerptools bash
+# jetzt ausführen z.B.
+./nextprodid.py
 ```
 
 ### - [`export.py`](export.py)
@@ -71,13 +78,6 @@ Then simply run:
   # ipython Shell, um die oerplib api zu nutzen
   ./ipython-shell.py
    > oerp.browse(...)
-```
-
-### - [`erpReicheltImport.py`](erpReicheltImport.py)
-```bash
-  # nicht mehr genutzt, theoretisch funktionsfähig, aber recht fragil:
-  # Reichelt-Warenkörbe und -artikel halbwegs automagisch ins ERP importieren
-  # ./erpReicheltImport.py basket.txt
 ```
 
 ##Webinterface

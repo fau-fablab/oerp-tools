@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
 # (C) Max Gaukler 2014
@@ -22,8 +22,8 @@ example: ./oerpSetLogo.py write production_test logo-testdatenbank.png
 
 """
 
-from ConfigParser import ConfigParser
-import oerplib
+from configparser import ConfigParser
+import oerplib3 as oerplib
 import locale
 import codecs
 from docopt import docopt

@@ -1,4 +1,4 @@
-#!/usr/bin/env python2.7
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 #
 # Copyright (C) 2014  Maximilian Gaukler <max@fablab.fau.de>
@@ -33,11 +33,6 @@ from docopt import docopt
 arguments = docopt(__doc__, version='Kassenbuch 1.0')
 from oerphelper import *
 
-
-# Decode all arguments with proper utf-8 decoding:
-arguments.update(
-    dict(map(lambda t: (t[0], t[1].decode('utf-8')),
-             filter(lambda t: isinstance(t[1], str), arguments.items()))))
 # export openERP -> csv
 
 
@@ -51,9 +46,9 @@ def get_formatstring(fmt, shop):
             fmt = "tsv"
 
     if fmt == "tsv":
-        return u"{qty}\t{code}"
+        return "{qty}\t{code}"
     else:  # csv
-        return u"{qty};{code}"
+        return "{qty};{code}"
 
 
 # make integer if it is a n.0000 float
@@ -80,13 +75,13 @@ if arguments["purchase.order"]:
     else:
         search_filter += [("state", "=", "draft")]
     if not ids:
-        print "# filtering: ", search_filter
+        print("# filtering: ", search_filter)
         ids = oerp.search('purchase.order', search_filter)
     # create output
     for order in oerp.browse('purchase.order', ids):
-        print u"# order {} for {}".format(order.name, order.partner_id.name)
+        print("# order {} for {}".format(order.name, order.partner_id.name))
         if order.state != "draft":
-            print "#WARNING: this order is in state {}".format(order.state)
+            print("#WARNING: this order is in state {}".format(order.state))
         for line in order.order_line:
             # try to fetch the product code from the product's supplier info entries
             product_code = False
@@ -95,10 +90,10 @@ if arguments["purchase.order"]:
                     product_code = supplierInfo.product_code
                     break
             if not product_code:
-                print u"# cannot find product code in supplier information for {}".format(line.name)
+                print("# cannot find product code in supplier information for {}".format(line.name))
                 product_code = line.name
             # print output
-            print get_formatstring(arguments["--format"], order.partner_id.name).format(
-                qty=int_format(line.product_qty), code=product_code)
+            print(get_formatstring(arguments["--format"], order.partner_id.name).format(
+                qty=int_format(line.product_qty), code=product_code))
 else:
-    print "option not implemented"
+    print("option not implemented")

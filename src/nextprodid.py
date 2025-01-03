@@ -1,4 +1,4 @@
-#!/usr/bin/env python2.7
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 # PYTHON_ARGCOMPLETE_OK
 
@@ -6,6 +6,7 @@
 A small python script, to get the next available n numeric product id,
 optional with searching for consecutive ones and print OERP multi variant code
 """
+
 
 import sys
 import json
@@ -37,7 +38,7 @@ def print_error(message):
     """
     prints an error message to stderr
     """
-    print >> sys.stderr, "[!] %s" % message
+    print("[!] %s" % message, file=sys.stderr)
 
 
 def read_config():
@@ -50,7 +51,7 @@ def read_config():
     res_json = json.loads(res if res != "" else "[]")
     reserved = []
     for r in res_json:
-        reserved += [int(r)] if not isinstance(r, list) else range(int(r[0]), int(r[-1])+1)
+        reserved += [int(r)] if not isinstance(r, list) else list(range(int(r[0]), int(r[-1])+1))
     return {'reserved': reserved}
 
 
@@ -163,7 +164,7 @@ def main():
     if not args.oerp_code or args.list:
         # list ids
         for i in found_ids:
-            print("%04d" % i)
+            print(("%04d" % i))
     if args.oerp_code:
         # create special OERP code
         # found_ids[0] is the first found id in sequence
@@ -174,8 +175,8 @@ def main():
         print_error("Next unused id with {n} consecutive ids is '%04d'".
                     format(n=args.count) % found_ids[0])
         print_error("Enter the following code in the Code Generator")
-        print("[_str(o.id{s}{n})_]".format(s=signum(offset),
-                                           n=strip0(abs(offset))))
+        print(("[_str(o.id{s}{n})_]".format(s=signum(offset),
+                                           n=strip0(abs(offset)))))
 
     sys.exit(0)
 

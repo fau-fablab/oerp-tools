@@ -1,4 +1,4 @@
-#!/usr/bin/env python2.7
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 #
 # Copyright (C) 2015 Max Gaukler <max@fablab.fau.de>
@@ -14,7 +14,7 @@
 # You should have received a copy of the GNU General Public License along with this program. If not,
 # see <http://www.gnu.org/licenses/>.
 
-"""set a purchase order as "done"
+"""set a purchase order as "cancel"
 
 Usage:
   setOrderDone.py PO000123... [--force]
@@ -35,13 +35,13 @@ try:
 except ImportError:
     sys.stderr.write("termcolor not found. please: sudo pip install termcolor\n")
     def colored(s, c=None, attrs=None):
-        print s
+        print(s)
 
 def printError(s):
-    print colored(s, 'red',  attrs=['bold'])
+    print(colored(s, 'red',  attrs=['bold']))
 
 def printBold(s):
-    print colored(s, 'blue',  attrs=['bold'])
+    print(colored(s, 'blue',  attrs=['bold']))
 
 arguments = docopt(__doc__)
 force = arguments['--force']
@@ -50,13 +50,13 @@ for po in arguments['PO000123']:
     po=po.upper()
     if not po.startswith("PO"):
         printError("Error: order number must start with PO...")
-        print __doc__
+        print(__doc__)
         sys.exit(1)
     printBold("Order: {}".format(po))
     order=getId('purchase.order', [('name', '=', po)])
     order=oerp.browse('purchase.order', order)
-    if order.state=="done":
-        printError("already marked done.")
+    if order.state=="cancel":
+        printError("already marked cancel.")
         continue
     if not order.state=="approved":
         printError("order state is not 'approved'")
@@ -67,7 +67,7 @@ for po in arguments['PO000123']:
     invoicesOkay=True
     invoices=list(order.invoice_ids)
     if len(invoices)==0:
-        print ""
+        print("")
         problem=True
     for inv in order.invoice_ids:
         if inv.state != 'paid':
@@ -78,21 +78,21 @@ for po in arguments['PO000123']:
     
     pickingOkay=True
     for pick in order.picking_ids:
-        print "checking picking {}".format(pick.name)
+        print("checking picking {}".format(pick.name))
         if pick.invoice_state=='none':
-            print "Warning: invoice creation is not 'from picking list' (e.g. prepaid). This script cannot check if only for some part of the articles an invoice was created and paid."
+            print("Warning: invoice creation is not 'from picking list' (e.g. prepaid). This script cannot check if only for some part of the articles an invoice was created and paid.")
         if pick.invoice_state == '2binvoiced':
             printError("picking list is still to-be-invoiced")
             problem=True
-        if pick.state != 'done':
-            printError("picking list is not done, but in state '{}'".format(pick.state))
+        if pick.state != 'cancel':
+            printError("picking list is not cancel, but in state '{}'".format(pick.state))
             problem=True
     if (not problem) or force:
-        print "marking as done\n"
-        order.state='done'
+        print("marking as cancel\n")
+        order.state='cancel'
         oerp.write_record(order)
     else:
-        print "skipping. to ignore errors, use --force"
+        print("skipping. to ignore errors, use --force")
     
 
 

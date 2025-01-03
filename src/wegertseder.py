@@ -20,9 +20,9 @@ from csv import DictReader
     
 CSV_FILE_NAME = './wegertseder.csv'
 OERP_PRODUCT_NAMES = {
-    'DIN 7991': u'Senkschraube\xa0DIN\xa07991\xa0‐ {groesse}\xa0‐\xa08.8',
-    'DIN 933': u'Sechskantschraube\xa0DIN\xa0933\xa0‐ {groesse}\xa0‐\xa08.8',
-    'DIN 912': u'Zylinderschraube\xa0DIN\xa0912\xa0‐ {groesse}\xa0‐\xa08.8',
+    'DIN 7991': 'Senkschraube\xa0DIN\xa07991\xa0‐ {groesse}\xa0‐\xa08.8',
+    'DIN 933': 'Sechskantschraube\xa0DIN\xa0933\xa0‐ {groesse}\xa0‐\xa08.8',
+    'DIN 912': 'Zylinderschraube\xa0DIN\xa0912\xa0‐ {groesse}\xa0‐\xa08.8',
 }
 
 # ID supplier "Wegertseder"
@@ -37,23 +37,23 @@ def updatePriceWegertseder():
         for row in reader:
             name = ''
             #print(row)
-            for key, value in OERP_PRODUCT_NAMES.items():
+            for key, value in list(OERP_PRODUCT_NAMES.items()):
                 if key in row['artikel_name']:
                     name = value
                     break
     
             if not name:
-                print('Ignoring row', row)
+                print(('Ignoring row', row))
                 continue
     
-            value_groesse = row['groesse'].replace(' ', '', 1).replace(' ', u'\xa0').strip()
+            value_groesse = row['groesse'].replace(' ', '', 1).replace(' ', '\xa0').strip()
             name = name.format(groesse = value_groesse)
             #print('groesse: %s' % value_groesse)
             #print('name: %s' % name)
     
             prod_id = oerp.search('product.product', [('name','like', name)])
             if (prod_id):
-                print('name: %s (ID: %i)' % (name, prod_id[0]))
+                print(('name: %s (ID: %i)' % (name, prod_id[0])))
                 if (len(prod_id) > 1):
                     print('Error: More then one product found!')
                     continue
@@ -85,7 +85,7 @@ def updatePriceWegertseder():
                                         if product.list_price < product.standard_price:
                                             oldPrice = product.list_price
                                             product.list_price = max(round(product.standard_price * 1.5, 2), 0.05)
-                                            print('Sales price has to be updated from %.2f € to %.2f €' % (oldPrice, product.list_price))
+                                            print(('Sales price has to be updated from %.2f € to %.2f €' % (oldPrice, product.list_price)))
                                             NewLabelsToPrint.append(int(product.default_code))
                                             updateNeeded = True
                                         if updateNeeded:
@@ -102,23 +102,23 @@ def addWegertseder():
         for row in reader:
             name = ''
             #print(row)
-            for key, value in OERP_PRODUCT_NAMES.items():
+            for key, value in list(OERP_PRODUCT_NAMES.items()):
                 if key in row['artikel_name']:
                     name = value
                     break
     
             if not name:
-                print('Ignoring row', row)
+                print(('Ignoring row', row))
                 continue
     
-            value_groesse = row['groesse'].replace(' ', '', 1).replace(' ', u'\xa0').strip()
+            value_groesse = row['groesse'].replace(' ', '', 1).replace(' ', '\xa0').strip()
             name = name.format(groesse = value_groesse)
             #print('groesse: %s' % value_groesse)
             #print('name: %s' % name)
     
             prod_id = oerp.search('product.product', [('name','like', name)])
             if (prod_id):
-                print('name: %s (ID: %i)' % (name, prod_id[0]))
+                print(('name: %s (ID: %i)' % (name, prod_id[0])))
                 if (len(prod_id) > 1):
                     print('Error: More then one product found!')
                     continue

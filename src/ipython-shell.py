@@ -1,11 +1,11 @@
 #!/usr/bin/ipython -i
 # -*- coding: utf-8 -*-
-print ""
-print "connecting to OERP"
-from oerphelper import *
+print("")
+print("connecting to OERP")
+from .oerphelper import *
 import datetime # for editing dates
-print "now use oerp.browse, read, write, ... or the helper functions read() etc"
-print """quick intro:
+print("now use oerp.browse, read, write, ... or the helper functions read() etc")
+print("""quick intro:
 a=oerp.browse('product.product',142);
 use autoexpansion:
 a.<Tab>
@@ -18,5 +18,5 @@ http://oerplib.readthedocs.org/
 http://oerplib.readthedocs.org/en/latest/tutorials.html
 
 Obacht, mit der API kann man viele blödsinnige Dinge machen, die das Webinterface verbietet!
-"""
+""")
 

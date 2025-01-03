@@ -1,3 +1,3 @@
-[submodule "sammelbestellung"]
-	path = sammelbestellung
-	url = git@github.com:mgmax/sammelbestellung.git
+[submodule "src/oerplib3-repo"]
+	path = src/oerplib3-repo
+	url = https://github.com/mgmax/zeroincombenze-tools

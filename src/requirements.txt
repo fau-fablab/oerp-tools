@@ -1,0 +1,2 @@
+# oerplib commented out, currently as git submodule directly in src dir
+# oerplib3==0.8.5 # --hash=sha256:b690f77afe3f3f4618d466447ba5e0d25e0ab49fcbc578bb36e2f940a856d14c

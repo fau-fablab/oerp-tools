@@ -1,6 +1,6 @@
-#!/usr/bin/env python2.7
-# -*- coding: cp1252 -*-
-from oerphelper import *
+#!/usr/bin/env python3
+# -*- coding: utf8 -*-
+from .oerphelper import *
 from operator import itemgetter
 import argparse
 import sys
@@ -8,7 +8,7 @@ import sys
 try:
     import argcomplete
 except ImportError:
-    print >> sys.stderr, "Consider installing argcomplete"
+    print("Consider installing argcomplete", file=sys.stderr)
 
 
 # supported suppliers
@@ -221,8 +221,8 @@ def conclusionPrinting(csv_output, products_fail, products_warnings, purchase_li
     """
 
     if len(csv_output) > 1:
-        print("'{nr}' out of '{cnt}' have been sucessfull written to '{fname}.csv'"
-              .format(nr=len(csv_output)-1, cnt=len(purchase_lines), fname=fileName))
+        print(("'{nr}' out of '{cnt}' have been sucessfull written to '{fname}.csv'"
+              .format(nr=len(csv_output)-1, cnt=len(purchase_lines), fname=fileName)))
 
     if products_fail:
         print_error(str(len(products_fail)) + ' errors occured.')
@@ -286,14 +286,14 @@ def print_error(message):
     """
     prints an error message to stderr
     """
-    print >> sys.stderr, "[!] %s" % message
+    print("[!] %s" % message, file=sys.stderr)
 
 
 def print_warning(message):
     """
     prints an warning message to stdout
     """
-    print >> sys.stdout, "[i] %s" % message
+    print("[i] %s" % message, file=sys.stdout)
 
 if __name__ == "__main__":
     convert_order()
